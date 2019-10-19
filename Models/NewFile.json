@@ -1,0 +1,35 @@
+﻿{
+  "fields": {
+    "created_at": {
+      "timestampValue": "usertime"
+    },
+    "email": {
+      "stringValue": "useremail"
+    }, 
+    "local_id": { 
+      "stringValue": "userlocalid"
+    },
+    "phone_no": {
+      "stringValue": "userphone"
+    }, 
+    "username": { 
+      "stringValue": "userusername"
+    },
+    "wallet_balance": { 
+      "doubleValue": 0.00
+    }
+  }
+}
+
+
+stringValue
+doubleValue
+integerValue
+booleanValue
+arrayValue
+bytesValue
+geoPointValue
+mapValue
+nullValue
+referenceValue
+timestampValue
