@@ -9,6 +9,7 @@ public class Withdraw
     public string id;
     public string transaction_id;
     public string bank_name;
+    public string bank_code;
     public string account_number;
     public float amount;
     public string time;
@@ -19,10 +20,11 @@ public class Withdraw
 
     public string status;
 
-    public Withdraw(string _id, string _transaction_id, string _bank_name, string _account_number, float _amount, string _reference, User user)
+    public Withdraw(string _id, string _transaction_id, string _bank_code, string _bank_name, string _account_number, float _amount, string _reference, User user)
     {
         id = _id;
         transaction_id = _transaction_id;
+        bank_code = _bank_code;
         bank_name = _bank_name;
         account_number = _account_number;
         amount = _amount;
@@ -30,14 +32,15 @@ public class Withdraw
         user_local = user.local_id;
         user_name = user.username;
         user_email = user.email;
-        status = "pending";
+        status = "successful";
         reference = _reference;
     }
 
-    public Withdraw(string _id, string _transaction_id, string _bank_name, string _account_number, float _amount, string _reference, string _status, string _local_id, string _username, string _email)
+    public Withdraw(string _id, string _transaction_id, string _bank_code, string _bank_name, string _account_number, float _amount, string _reference, string _status, string _local_id, string _username, string _email)
     {
         id = _id;
         transaction_id = _transaction_id;
+        bank_code = _bank_code;
         bank_name = _bank_name;
         account_number = _account_number;
         amount = _amount;

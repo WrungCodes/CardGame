@@ -31,13 +31,14 @@ public static class FormatGetData
     {
         var data = fsJsonParser.Parse(responseJson);
         object deserialized = null;
-        serializer.TryDeserialize(data, typeof(AllTransactionRootObject), ref deserialized);
-        var authResponse = deserialized as AllTransactionRootObject;
+        serializer.TryDeserialize(data, typeof(List<QueryDocuments>), ref deserialized);
+        var authResponse = deserialized as List<QueryDocuments>;
 
         List<Transaction> all_transactions = new List<Transaction>();
-        foreach (var user in authResponse.documents)
+        foreach (var user in authResponse)
         {
-            all_transactions.Add(user.returnTransaction());
+            //user.document.fields
+            all_transactions.Add(user.document.returnTransaction());
             //Debug.Log(user.returnUser().username);
         }
         return all_transactions;
@@ -68,5 +69,32 @@ public static class FormatGetData
         serializer.TryDeserialize(data, typeof(WithdrawalRootObject), ref deserialized);
         var authResponse = deserialized as WithdrawalRootObject;
         return authResponse.fields.returnWithdrawal();
+    }
+
+    public static GladePayDepositResponse GladePayDeposit(string responseJson)
+    {
+        var data = fsJsonParser.Parse(responseJson);
+        object deserialized = null;
+        serializer.TryDeserialize(data, typeof(GladePayDepositResponse), ref deserialized);
+        var authResponse = deserialized as GladePayDepositResponse;
+        return authResponse;
+    }
+
+    public static GladePayOtpResponse GladePayDepositOtp(string responseJson)
+    {
+        var data = fsJsonParser.Parse(responseJson);
+        object deserialized = null;
+        serializer.TryDeserialize(data, typeof(GladePayOtpResponse), ref deserialized);
+        var authResponse = deserialized as GladePayOtpResponse;
+        return authResponse;
+    }
+
+    public static GladePayWithdrawalResponse GladePayWithdrawal(string responseJson)
+    {
+        var data = fsJsonParser.Parse(responseJson);
+        object deserialized = null;
+        serializer.TryDeserialize(data, typeof(GladePayWithdrawalResponse), ref deserialized);
+        var authResponse = deserialized as GladePayWithdrawalResponse;
+        return authResponse;
     }
 }

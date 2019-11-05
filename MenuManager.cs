@@ -22,6 +22,11 @@ public class MenuManager : MonoBehaviour
 
     }
 
+    public void SetWalletBalance(float amount)
+    {
+        wallet_balance.text = $"WALLET BALANCE: N {amount}";
+    }
+
     // Update is called once per frame
     void Update()
     {

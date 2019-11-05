@@ -116,6 +116,30 @@ public static class FireBase
     public delegate void PostFailedCallback(Exception error);
     public static void Post(string post_data, string document, string token, PostSuccessCallback callback, PostFailedCallback fallback)
     {
+        string url = firebase_baseurl + $"projects/{projectID}/databases/(default)/documents{document}";
+        Debug.Log(url);
+        Debug.Log(post_data);
+        RequestHelper currentRequest = new RequestHelper
+        {
+            Uri = url,
+            BodyString = post_data,
+            Headers = new Dictionary<string, string>
+            {
+                { "Content-Type", "application/json" },
+                {"Authorization", "Bearer " + token }
+            },
+            ContentType = "application/json",
+            EnableDebug = true,
+            Timeout = 200
+        };
+
+        RestClient.Post(currentRequest)
+        .Then(response => { Debug.Log(response.StatusCode); callback(response.Text); })
+        .Catch(error => { fallback(error); });
+    }
+
+    public static void Put(string post_data, string document, string token, PostSuccessCallback callback, PostFailedCallback fallback)
+    {
         string url = firebase_baseurl + $"projects/{projectID}/databases/(default)/documents/{document}";
         Debug.Log(url);
         Debug.Log(post_data);
@@ -129,10 +153,30 @@ public static class FireBase
                 {"Authorization", "Bearer " + token }
             },
             ContentType = "application/json",
-            EnableDebug = true
+            EnableDebug = true,
+            Timeout = 200
         };
 
-        RestClient.Post(currentRequest)
+        RestClient.Put(currentRequest)
+        .Then(response => { Debug.Log(response.StatusCode); callback(response.Text); })
+        .Catch(error => { fallback(error); });
+    }
+
+    public static void Patch(string post_data, string document, string token, PostSuccessCallback callback, PostFailedCallback fallback)
+    {
+        string url = firebase_baseurl + $"projects/{projectID}/databases/(default)/documents/{document}";
+        RestClient.Request(new RequestHelper
+        {
+            Uri = url,
+            Method = "PATCH",
+            Timeout = 200,
+            Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/json" },
+                    {"Authorization", "Bearer " + token }
+                },
+            BodyString = post_data,
+        })
         .Then(response => { Debug.Log(response.StatusCode); callback(response.Text); })
         .Catch(error => { fallback(error); });
     }

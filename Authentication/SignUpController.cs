@@ -27,7 +27,7 @@ public static class SignUpController
                 var authResponse = deserialized as Dictionary<string, string>;
                 User user = CreateNewUser(username, phone_no, email, authResponse["localId"]);
 
-                string document_path = "users/?documentId=" + user.local_id; //?documentId = 10
+                string document_path = "/users/?documentId=" + user.local_id; //?documentId = 10
                 string post_data = FormatPostData.UserFieldModel(user);
 
                 string token = authResponse["idToken"];

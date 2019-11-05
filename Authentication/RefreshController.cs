@@ -35,6 +35,7 @@ public static class RefreshController
             string token = authResponse["id_token"];
             FireBase.Get(document_path, token,
                 (firebase_response) => {
+                    Debug.Log(firebase_response);
                     User user = FormatGetData.GetUser(firebase_response);
                     callback(user, authResponse["refresh_token"], authResponse["id_token"]);
                 },

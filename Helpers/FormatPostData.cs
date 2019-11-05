@@ -43,12 +43,9 @@ public static class FormatPostData
             email = new Email { stringValue = deposit.user_email },
             local_id = new LocalId { stringValue = deposit.user_local },
             username = new Username { stringValue = deposit.user_name },
-            bank_name = new BankName { stringValue = deposit.bank_name },
-            account_number = new AccountNumber { stringValue = deposit.account_number },
             amount = new Amount { doubleValue = deposit.amount },
             status = new Status { stringValue = deposit.status},
             transaction_id = new TransactionId { stringValue = deposit.transaction_id },
-            time = new Time { timeStamp = deposit.time },
             reference = new TransactionId { stringValue = deposit.reference },
         };
 
@@ -73,11 +70,11 @@ public static class FormatPostData
             local_id = new LocalId { stringValue = withdraw.user_local },
             username = new Username { stringValue = withdraw.user_name },
             bank_name = new BankName { stringValue = withdraw.bank_name },
+            bank_code = new BankCode { stringValue = withdraw.bank_code },
             account_number = new AccountNumber { stringValue = withdraw.account_number },
             amount = new Amount { doubleValue = withdraw.amount },
             status = new Status { stringValue = withdraw.status },
             transaction_id = new TransactionId { stringValue = withdraw.transaction_id },
-            time = new Time { timeStamp = withdraw.time },
             reference = new TransactionId { stringValue = withdraw.reference },
         };
 
@@ -101,7 +98,8 @@ public static class FormatPostData
             initial_amount = new Amount { doubleValue = transaction.initial_amount },
             final_amount = new Amount { doubleValue = transaction.final_amount },
             type = new TransactionType { stringValue = transaction.type },
-            id = new TransactionId { stringValue = transaction.id }
+            id = new TransactionId { stringValue = transaction.id },
+            time = new Time { stringValue = transaction.time}
         };
 
         transactionRootObject rootObject = new transactionRootObject

@@ -86,6 +86,12 @@ public class BankName
 }
 
 [Serializable]
+public class BankCode
+{
+    public string stringValue { get; set; }
+}
+
+[Serializable]
 public class AccountNumber
 {
     public string stringValue { get; set; }
@@ -112,7 +118,7 @@ public class TransactionType
 [Serializable]
 public class Time
 {
-    public string timeStamp { get; set; }
+    public string stringValue { get; set; }
 }
 
 [Serializable]
@@ -122,10 +128,7 @@ public class DepositFields
     public Email email { get; set; }
     public LocalId local_id { get; set; }
     public Username username { get; set; }
-    public Time time { get; set; }
     public TransactionId transaction_id { get; set; }
-    public AccountNumber account_number { get; set; }
-    public BankName bank_name { get; set; }
     public Amount amount { get; set; }
     public Status status { get; set; }
     public TransactionId reference { get; set; }
@@ -135,8 +138,6 @@ public class DepositFields
         Deposit deposit = new Deposit(
             id.stringValue,
             transaction_id.stringValue,
-            bank_name.stringValue,
-            account_number.stringValue,
             amount.doubleValue,
             reference.stringValue,
             status.stringValue,
@@ -161,10 +162,10 @@ public class WithdrawalFields
     public Email email { get; set; }
     public LocalId local_id { get; set; }
     public Username username { get; set; }
-    public Time time { get; set; }
     public TransactionId transaction_id { get; set; }
     public AccountNumber account_number { get; set; }
     public BankName bank_name { get; set; }
+    public BankCode bank_code { get; set; }
     public Amount amount { get; set; }
     public Status status { get; set; }
     public TransactionId reference { get; set; }
@@ -174,6 +175,7 @@ public class WithdrawalFields
         Withdraw withdraw = new Withdraw(
             id.stringValue,
             transaction_id.stringValue,
+            bank_code.stringValue,
             bank_name.stringValue,
             account_number.stringValue,
             amount.doubleValue,
@@ -199,9 +201,9 @@ public class TransactionFields
     public TransactionId id { get; set; }
     public LocalId local_id { get; set; }
     public TransactionType type { get; set; }
-    public Time time { get; set; }
     public Amount initial_amount { get; set; }
     public Amount final_amount { get; set; }
+    public Time time { get; set; }
 }
 
 [Serializable]
@@ -258,7 +260,8 @@ public class TransactionDocument
             fields.type.stringValue,
             fields.initial_amount.doubleValue,
             fields.final_amount.doubleValue,
-            fields.local_id.stringValue
+            fields.local_id.stringValue,
+            fields.time.stringValue
         );
         return transaction;
     }
@@ -269,6 +272,18 @@ public class AllTransactionRootObject
 {
     public List<TransactionDocument> documents { get; set; }
 }
+
+[Serializable]
+public class QueryDocuments
+{
+    public TransactionDocument document { get; set; }
+    public string readTime { get; set; }
+}
+
+//public class List<QueryDocuments>
+//{
+
+//}
 
 [Serializable]
 public class SingleTransactionRootObject
