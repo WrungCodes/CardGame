@@ -7,10 +7,24 @@ public class Manager : MonoBehaviour
 
 	List<Player> players;
 
+    Deck market;
+
+    Deck playingCard;
+
+    Card currentCard;
+
+    Deck allCards;
+
     // Start is called before the first frame update
     void Start()
     {
         
+    }
+
+    public Card SetCurrentCard(Card card)
+    {
+        currentCard = card;
+        return card;
     }
 
     // Update is called once per frame
@@ -18,33 +32,68 @@ public class Manager : MonoBehaviour
     {
         
     }
-}
 
-public class Player
-{
-	public string username;
-	public string status;
-	public bool isTurn;
-
-	public List<Card> cards;
-
-    public void SetTurn()
+    void RemoveInvalidCards(List<Card> cards)
     {
-        isTurn = true;
+        // Removing the star cards
+        cards.RemoveRange(55, 5);
+
+        // Removing the crosses cards
+        cards.RemoveAt(27);
+        cards.RemoveAt(30);
+        cards.RemoveAt(33);
+
+        // Removing the Square cards
+        cards.RemoveAt(15);
+        cards.RemoveAt(18);
+        cards.RemoveAt(21);
     }
 
-    public void EndTurn()
+    void AddWhotCards(List<Card> cards)
     {
-        isTurn = false;
+        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
     }
 
-    public void AddCards(List<Card> _cards)
+    public void StartCardShuffle()
     {
-        cards.AddRange(_cards);
+        List<Card> cards_list = new List<Card>();
+
+        for (Card.Shape s = Card.Shape.circle; s <= Card.Shape.star; ++s)
+        {
+            for (Card.Rank r = Card.Rank.one; r <= Card.Rank.fourteen; ++r)
+            {
+                cards_list.Add(new Card(s, r, Card.Type.normal));
+            }
+        }
+
+        RemoveInvalidCards(cards_list);
+        AddWhotCards(cards_list);
+
+        allCards = new Deck();
+        allCards.AddCards(cards_list);
+        allCards.Shuffle();
     }
 
-    public List<Card> GetCards()
+    void DealCardsToPlayers(Deck cards)
     {
-        return cards;
+        for (int i = 0; i < GameEnv.NO_OF_START_CARDS; i++)
+        {
+            foreach (Player player in players)
+            {
+                Card drawnCard = cards.DrawSingleCard();
+                player.AddCard(drawnCard);
+            }
+        }
+    }
+
+    void SetPlayingCards(Deck deck)
+    {
+        Card drawn_card = deck.DrawSingleCard();
+        playingCard = new Deck();
+        playingCard.AddCard(drawn_card);
+        currentCard = drawn_card;
     }
 }

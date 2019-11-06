@@ -20,10 +20,10 @@ public class CardManager : MonoBehaviour
     void Awake()
     {
         List<Card> cards = new List<Card>();
-        List<Card> player_one_cards;
-        List<Card> player_two_cards;
-        List<Card> playing_cards = new List<Card>();
-        Card playing_card;
+        //List<Card> player_one_cards;
+        //List<Card> player_two_cards;
+        //List<Card> playing_cards = new List<Card>();
+        //Card playing_card;
 
         for (Card.Shape s = Card.Shape.circle; s <= Card.Shape.star; ++s)
         {
@@ -32,11 +32,13 @@ public class CardManager : MonoBehaviour
                 cards.Add(new Card(s, r, Card.Type.normal));
             }
         }
+
         RemoveInvalidCards(cards);
-        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
-        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
-        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
-        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        AddWhotCards(cards);
+        //cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        //cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        //cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        //cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
 
         deck = new Deck<Card>(cards);
         deck.Shuffle();
@@ -135,6 +137,14 @@ public class CardManager : MonoBehaviour
         cards.RemoveAt(15);
         cards.RemoveAt(18);
         cards.RemoveAt(21);
+    }
+
+    public void AddWhotCards(List<Card> cards)
+    {
+        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
+        cards.Add(new Card(Card.Shape.whot, Card.Rank.whot, Card.Type.jackpot));
     }
 
     public bool IsActionCard(Card card)

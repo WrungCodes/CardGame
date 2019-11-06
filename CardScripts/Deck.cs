@@ -1,17 +1,47 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
-public class Deck<Card>
+public class Deck
 {
-    List<Card> cards;
+    public List<Card> cards;
 
-    public Deck(List<Card> cards)
+    public void AddCards(List<Card> _cards)
     {
-        this.cards = cards;
+        cards.AddRange(_cards);
     }
 
-    // Shuffle the Current Deck of cards
+    public void AddCard(Card _card)
+    {
+        cards.Add(_card);
+    }
+
+    public Card RemoveCard(Card card)
+    {
+        int index = cards.IndexOf(card);
+        cards.RemoveAt(index);
+        return card;
+    }
+
+    public List<Card> RemoveCards(List<Card> _cards)
+    {
+        foreach (Card card in _cards)
+        {
+            int index = cards.IndexOf(card);
+            cards.RemoveAt(index);
+        }
+        return _cards;
+    }
+
+    public bool IsCardEnough(int no_card)
+    {
+        if (cards.Count < no_card)
+        {
+            return false;
+        }
+        return true;
+    }
+
     public void Shuffle()
     {
         for (int i = cards.Count - 1; i > 0; --i)
@@ -22,29 +52,24 @@ public class Deck<Card>
             cards[i] = card;
         }
     }
+
+    public List<Card> RandomDrawCards(int number_to_draw)
+    {
+        List<Card> drawnCards = new List<Card>();
+        for (int i = 0; i < number_to_draw; ++i)
+        {
+            int randomIndex = Random.Range(0, cards.Count);
+            drawnCards.Add(cards[randomIndex]);
+            cards.RemoveAt(randomIndex);
+        }
+        return drawnCards;
+    }
+
     public Card DrawSingleCard()
     {
         Card drawnCard = cards[0];
         cards.RemoveAt(0);
         return drawnCard;
     }
-
-    // Return a list of drawn Cards from deck
-    public List<Card> Draw(int numberToDraw = 1)
-    {
-        if (numberToDraw > cards.Count)
-            numberToDraw = cards.Count;
-        List<Card> drawnCards = new List<Card>();
-        for (int i = 0; i < numberToDraw; ++i)
-        {
-            drawnCards.Add(cards[0]);
-            cards.RemoveAt(0);
-        }
-        return drawnCards;
-    }
-
-    public void addCards()
-    {
-
-    }
 }
+
