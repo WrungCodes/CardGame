@@ -6,6 +6,11 @@ public class Deck
 {
     public List<Card> cards;
 
+    public int CardCount()
+    {
+        return cards.Count;
+    }
+
     public void AddCards(List<Card> _cards)
     {
         cards.AddRange(_cards);
@@ -61,6 +66,17 @@ public class Deck
             int randomIndex = Random.Range(0, cards.Count);
             drawnCards.Add(cards[randomIndex]);
             cards.RemoveAt(randomIndex);
+        }
+        return drawnCards;
+    }
+
+    public List<Card> DrawCards(int number_to_draw)
+    {
+        List<Card> drawnCards = new List<Card>();
+        for (int i = 0; i < number_to_draw; ++i)
+        {
+            drawnCards.Add(cards[0]);
+            cards.RemoveAt(0);
         }
         return drawnCards;
     }

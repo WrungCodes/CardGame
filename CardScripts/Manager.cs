@@ -96,4 +96,12 @@ public class Manager : MonoBehaviour
         playingCard.AddCard(drawn_card);
         currentCard = drawn_card;
     }
+
+    void FillMarketDeck(Deck deck)
+    {
+        List<Card> drawnCards = deck.DrawCards(deck.CardCount());
+        market = new Deck();
+        market.AddCards(drawnCards);
+    }
+
 }

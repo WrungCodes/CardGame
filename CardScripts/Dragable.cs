@@ -16,6 +16,7 @@ public class Dragable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         this.transform.SetParent(GameObject.Find("Board").transform);
 
         Debug.Log(this.transform.parent.name);
+        Debug.Log(this.transform.GetComponent<CardDisplay>().getCard());
 
         //screenPoint = Camera.main.WorldToScreenPoint(transform.position);
         //offset = transform.position - Camera.main.ScreenToWorldPoint(new Vector3(eventData.position.x, eventData.position.y, screenPoint.z));
@@ -34,9 +35,11 @@ public class Dragable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        this.transform.SetParent(ParentToReturnTo);
-        Debug.Log(this.transform.parent.name);
+        
+            this.transform.SetParent(ParentToReturnTo);
+            Debug.Log(this.transform.parent.name);
 
-        GetComponent<CanvasGroup>().blocksRaycasts = true;
+            GetComponent<CanvasGroup>().blocksRaycasts = true;
+        
     }
 }

@@ -45,6 +45,11 @@ public class Player
         return card;
     }
 
+    public int GetCard(Card card)
+    {
+        return cards.IndexOf(card);
+    }
+
     public int GetCardNumber()
     {
         return cards.Count;

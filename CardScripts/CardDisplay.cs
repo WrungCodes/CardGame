@@ -35,7 +35,7 @@ public class CardDisplay : MonoBehaviour
 
 
 
-    //public Card card;
+    public Card thisCard;
 
 
     private Sprite GetImage(Card card1)
@@ -101,6 +101,13 @@ public class CardDisplay : MonoBehaviour
         shape_bottom.sprite = GetImage(card);
         number_top.sprite = GetRankImage(card);
         number_bottom.sprite = GetRankImage(card);
+
+        thisCard = card;
     }
 
+    public Card getCard()
+    {
+        return thisCard;
+    }
+    //public void 
 }
