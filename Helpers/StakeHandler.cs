@@ -19,6 +19,8 @@ public class StakeHandler : MonoBehaviour
     public Text fourplayer;
     public Text sixplayer;
 
+    public int lobbySceneIndex;
+
 
     // Use this for initialization
     void Start()
@@ -63,7 +65,7 @@ public class StakeHandler : MonoBehaviour
             (response) => {
                 walletBalance.text = $"WALLET BALANCE: N {response}";
                 //SetLoading(loading, form, back_button, false);
-                SceneManager.LoadScene(sceneBuildIndex: 1);
+                SceneManager.LoadScene(sceneBuildIndex: lobbySceneIndex);
             },
             (error) => {
                 SetLoading(loading, failed, back_button, true);

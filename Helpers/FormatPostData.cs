@@ -99,7 +99,7 @@ public static class FormatPostData
             final_amount = new Amount { doubleValue = transaction.final_amount },
             type = new TransactionType { stringValue = transaction.type },
             id = new TransactionId { stringValue = transaction.id },
-            time = new Time { stringValue = transaction.time}
+            time = new TimeField { stringValue = transaction.time}
         };
 
         transactionRootObject rootObject = new transactionRootObject

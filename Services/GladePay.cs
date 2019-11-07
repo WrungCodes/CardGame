@@ -37,12 +37,14 @@ public class GladePay
             BodyString = post_string,
             Headers = new Dictionary<string, string>
             {
+                {"Access-Control-Allow-Origin", "*"},
                 { "Content-Type", "application/json" },
                 { "key", merchant_key },
                 { "mid", merchant_id },
             },
             ContentType = "application/json",
-            EnableDebug = true
+            EnableDebug = true,
+            
         };
 
         RestClient.Put(currentRequest)
@@ -63,6 +65,7 @@ public class GladePay
             BodyString = post_string,
             Headers = new Dictionary<string, string>
             {
+                {"Access-Control-Allow-Origin", "*"},
                 { "Content-Type", "application/json" },
                 { "key", merchant_key },
                 { "mid", merchant_id },
@@ -89,6 +92,7 @@ public class GladePay
             BodyString = post_string,
             Headers = new Dictionary<string, string>
             {
+                {"Access-Control-Allow-Origin", "*"},
                 { "Content-Type", "application/json" },
                 { "key", merchant_key },
                 { "mid", merchant_id },

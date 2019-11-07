@@ -5,7 +5,7 @@ using UnityEngine;
 public class Manager : MonoBehaviour
 {
 
-	List<Player> players;
+	List<GamePlayer> players;
 
     Deck market;
 
@@ -81,7 +81,7 @@ public class Manager : MonoBehaviour
     {
         for (int i = 0; i < GameEnv.NO_OF_START_CARDS; i++)
         {
-            foreach (Player player in players)
+            foreach (GamePlayer player in players)
             {
                 Card drawnCard = cards.DrawSingleCard();
                 player.AddCard(drawnCard);

@@ -17,22 +17,36 @@ public static class SignInController
 
     public static void SignIn(string email, string password, SignInSuccessCallback callback, SignInFailedCallback fallback)
     {
-         // 'grant_tyrefresh_token&refresh_token=[REFRESH_TOKEN]'
-         // '{"email":"[user@example.com]","password":"[PASSWORD]","returnSecureToken":true}'
+        // 'grant_tyrefresh_token&refresh_token=[REFRESH_TOKEN]'
+        // '{"email":"[user@example.com]","password":"[PASSWORD]","returnSecureToken":true}'
         var payLoad = $"{{\"email\":\"{email}\",\"password\":\"{password}\",\"returnSecureToken\":\"{true}\"}}";
-        RestClient.Post<SignResponse>(firebase_signin_url + apiKey,payLoad)
+        RestClient.Post<SignResponse>(firebase_signin_url + apiKey, payLoad)
         .Then(
         response =>
         {
-            DatabaseHandler.GetUser(response.localId, response.idToken,
-              (user) =>
-              {
-                  callback(user, response.refreshToken, response.idToken);
-              }
-           );
-        }).Catch(error => {
-           Debug.Log(error);
-           fallback(error);
-       });
+            Debug.Log(response);
+            FireBase.Get("users/" + response.localId, response.idToken,
+                              (user) =>
+                              {
+                                  User sign_user = FormatGetData.GetUser(user);
+                                  callback(sign_user, response.refreshToken, response.idToken);
+                              },
+                              error =>
+                              {
+                                  Debug.Log(error);
+                                  fallback(error);
+                              }
+                );
+            // DatabaseHandler.GetUser(response.localId, response.idToken,
+            //   (user) =>
+            //   {
+            //       callback(user, response.refreshToken, response.idToken);
+            //   }
+            //);
+        }).Catch(error =>
+        {
+            Debug.Log(error);
+            fallback(error);
+        });
     }
 }

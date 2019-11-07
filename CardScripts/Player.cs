@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class Player
+public class GamePlayer
 {
     public string username;
     public string status;
@@ -9,7 +9,7 @@ public class Player
     public int player_no;
     public List<Card> cards;
 
-    public Player(string _username, int _player_no)
+    public GamePlayer(string _username, int _player_no)
     {
         username = _username;
         player_no = _player_no;

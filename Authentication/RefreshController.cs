@@ -63,4 +63,27 @@ public static class RefreshController
     //        (error) => { }
     //        );
     //}
+
+    public delegate void SuccessCallback(string refresh_token, string id_token);
+    public delegate void FailedCallback(object error);
+
+    public static void Refresh(string refresh_token, SuccessCallback callback, FailedCallback fallback)
+    {
+        var payLoad = $"{{\"grant_type\":\"refresh_token\",\"refresh_token\":\"{refresh_token}\"}}";
+        //var payLoad = $"{{\"email\":\"{email}\",\"password\":\"{password}\",\"returnSecureToken\":true}}";
+        RestClient.Post(firebase_refresh_url + apiKey, payLoad)
+        .Then(response => {
+
+            var responseJson = response.Text;
+            var data = fsJsonParser.Parse(responseJson);
+            object deserialized = null;
+            serializer.TryDeserialize(data, typeof(Dictionary<string, string>), ref deserialized);
+
+            var authResponse = deserialized as Dictionary<string, string>;
+
+            callback(authResponse["refresh_token"], authResponse["id_token"]);
+             
+        })
+        .Catch(error => { fallback(error); });
+    }
 }

@@ -116,7 +116,7 @@ public class TransactionType
 }
 
 [Serializable]
-public class Time
+public class TimeField
 {
     public string stringValue { get; set; }
 }
@@ -203,7 +203,7 @@ public class TransactionFields
     public TransactionType type { get; set; }
     public Amount initial_amount { get; set; }
     public Amount final_amount { get; set; }
-    public Time time { get; set; }
+    public TimeField time { get; set; }
 }
 
 [Serializable]
