@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class Manager : MonoBehaviour
 {
-
-	List<GamePlayer> players;
+    List<GamePlayer> players;
 
     Deck market;
 
@@ -18,7 +17,7 @@ public class Manager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     public Card SetCurrentCard(Card card)
@@ -30,7 +29,58 @@ public class Manager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
+    }
+
+    void ResetTurns()
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (i == 0)
+            {
+                players[i].isTurn = true;
+                //players[i].wasTurn = false;
+                players[i].isTurnNext = false;
+            }
+            else if (i == 1)
+            {
+                players[i].isTurn = false;
+                //players[i].wasTurn = false;
+                players[i].isTurnNext = true;
+            }
+            else
+            {
+                players[i].isTurn = false;
+                //players[i].wasTurn = false;
+                players[i].isTurnNext = false;
+            }
+        }
+    }
+
+    void UpdateTurns()
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].isTurnNext)
+            {
+                players[i].isTurn = true;
+                players[i].isTurnNext = false;
+
+                if (players.Count - 1 == i)
+                {
+                    ResetTurns();
+                }
+                else
+                {
+                    players[i + 1].isTurnNext = true;
+                    players[i + 1].isTurn = false;
+                }
+            }
+            //else if(i == players.Count - 1 && )
+            //{
+
+            //}
+        }
     }
 
     void RemoveInvalidCards(List<Card> cards)

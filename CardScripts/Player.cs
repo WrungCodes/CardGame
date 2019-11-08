@@ -5,7 +5,12 @@ public class GamePlayer
 {
     public string username;
     public string status;
-    public bool isTurn;
+
+    public bool wasTurn = false;
+    public bool isTurn = false;
+    public bool isTurnNext = false;
+
+
     public int player_no;
     public List<Card> cards;
 
