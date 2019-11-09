@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Photon.Realtime;
 using UnityEngine;
 
 public class Manager : MonoBehaviour
@@ -13,6 +14,9 @@ public class Manager : MonoBehaviour
     Card currentCard;
 
     Deck allCards;
+
+    //private Player currentPlayer;
+
 
     // Start is called before the first frame update
     void Start()
@@ -68,7 +72,7 @@ public class Manager : MonoBehaviour
 
                 if (players.Count - 1 == i)
                 {
-                    ResetTurns();
+                    players[0].isTurnNext = true;
                 }
                 else
                 {
@@ -76,10 +80,6 @@ public class Manager : MonoBehaviour
                     players[i + 1].isTurn = false;
                 }
             }
-            //else if(i == players.Count - 1 && )
-            //{
-
-            //}
         }
     }
 

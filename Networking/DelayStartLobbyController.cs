@@ -17,6 +17,7 @@ public class DelayStartLobbyController : MonoBehaviourPunCallbacks
 		PhotonNetwork.AutomaticallySyncScene = true; //Makes it so whatever scene the master client has loaded is the scene all other clients will load
 		//delayStartButton.SetActive(true);
         DelayStart();
+        //PhotonNetwork.PlayerList;
 
     }
 

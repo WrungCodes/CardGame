@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
+using Photon.Pun;
+using Photon.Realtime;
 
-public class GamePlayer
+public class GamePlayer: MonoBehaviour
 {
     public string username;
     public string status;
@@ -9,6 +12,8 @@ public class GamePlayer
     public bool wasTurn = false;
     public bool isTurn = false;
     public bool isTurnNext = false;
+
+    private Player player;
 
 
     public int player_no;
