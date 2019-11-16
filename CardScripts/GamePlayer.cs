@@ -3,27 +3,65 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using System.IO;
 
-public class GamePlayer: MonoBehaviour
+public class GamePlayer: MonoBehaviourPun
 {
     public string username;
-    private PhotonView PhotonView;
+
+    public PhotonView PhotonView;
+
     //public string status;
 
     //public bool wasTurn = false;
     //public bool isTurn = false;
     //public bool isTurnNext = false;
 
-    //private Player player;
+    public CardPlayer player;
 
+    public GameObject playerDeck;
+
+    public GameObject GameSetup;
+    //public GameObject board;
 
     //public int player_no;
-    public List<Card> cards;
+    public Deck cards;
 
-    private void Awake()
+    private void Start()
     {
-        PhotonView = GetComponent<PhotonView>();
+        //SendRPC();
+        //GameObject objBoard = GameObject.FindGameObjectWithTag("Board");
+        //GameObject obj = PhotonNetwork.Instantiate(
+        //    Path.Combine("Prefabs", "playerDeck"),
+        //    //objBoard.transform.position * UnityEngine.Random.Range(-20, 20)
+        //    Vector2.up
+        //    ,
+        //    Quaternion.identity, 0);
+        //obj.transform.SetParent(objBoard.transform);
     }
+
+    void OnPhotonInstantiate(PhotonMessageInfo info)
+    {
+        GameSetup.GetComponent<GameSetup>().MyObjects.Add(this.gameObject);
+    }
+
+    public void SendRPC()
+    {
+        PhotonView.RPC("RPC_UpdatePlayerList", RpcTarget.All, PhotonNetwork.LocalPlayer);
+    }
+
+    [PunRPC]
+    private void RPC_UpdatePlayerList(Player photon_player)
+    {
+        //PlayerManagement.Instance.AddPlayerGameObject(obj);
+        PlayerManagement.Instance.AddCardPlayer(photon_player);
+    }
+
+
+    //private void Awake()
+    //{
+    //    //PhotonView = GetComponent<PhotonView>();
+    //}
 
     //public GamePlayer(string _username, int _player_no)
     //{

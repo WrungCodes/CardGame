@@ -12,7 +12,11 @@ public class PlayerManagement : MonoBehaviour
 
     private PhotonView PhotonView;
 
-    private List<CardPlayer> CardPlayers = new List<CardPlayer>();
+    public List<CardPlayer> CardPlayers = new List<CardPlayer>();
+
+    public int noPeople = 0;
+
+    public List<GameObject> playersGameObjects;
 
     public Deck allCards;
 
@@ -21,6 +25,11 @@ public class PlayerManagement : MonoBehaviour
     {
         Instance = this;
         PhotonView = GetComponent<PhotonView>();
+
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            AddCardPlayer(player);
+        }
 
         //if (PhotonView.IsMine)
         //{
@@ -41,6 +50,18 @@ public class PlayerManagement : MonoBehaviour
         //}
     }
 
+
+
+    public void AddPlayerGameObject(GameObject playerGameObject)
+    {
+        int index = playersGameObjects.FindIndex(x => x.gameObject == playerGameObject);
+        if (index == -1)
+        {
+            playersGameObjects.Add(playerGameObject);
+        }
+    }
+
+
     public void AddCardPlayer( Player photonPlayer) {
         int index = CardPlayers.FindIndex(x => x.PhotonPlayer == photonPlayer);
         if (index == -1)
@@ -52,6 +73,7 @@ public class PlayerManagement : MonoBehaviour
         {
             Debug.Log(CardPlayer.PhotonPlayer.NickName);
         }
+        noPeople = CardPlayers.Count;
     }
 
     public void AddCardToPlayer(Player photonPlayer, List<Card> cards)

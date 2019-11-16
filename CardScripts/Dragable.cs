@@ -16,7 +16,7 @@ public class Dragable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         this.transform.SetParent(GameObject.Find("Board").transform);
 
         Debug.Log(this.transform.parent.name);
-        Debug.Log(this.transform.GetComponent<CardDisplay>().getCard());
+        //Debug.Log(this.transform.GetComponent<CardDisplay>().getCard());
 
         //screenPoint = Camera.main.WorldToScreenPoint(transform.position);
         //offset = transform.position - Camera.main.ScreenToWorldPoint(new Vector3(eventData.position.x, eventData.position.y, screenPoint.z));

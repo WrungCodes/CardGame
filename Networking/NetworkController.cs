@@ -13,7 +13,8 @@ public class NetworkController : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        PhotonNetwork.NickName = PlayerNetwork.Instance.PlayerName;
+        PhotonNetwork.NickName = GlobalState.GetUser().username;
+        //PlayerNetwork.Instance.PlayerName;
         Debug.Log(PhotonNetwork.NickName + " Connected to " + PhotonNetwork.CloudRegion + " Server");
     }
     // Update is called once per frame

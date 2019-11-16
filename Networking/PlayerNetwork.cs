@@ -13,16 +13,16 @@ public class PlayerNetwork : MonoBehaviour
 
     private PhotonView PhotonView;
 
-    public GamePlayer player;
+    //public GamePlayer player;
 
     // Use this for initialization
     private void Awake()
     {
-        Instance = this;
-        PhotonView = GetComponent<PhotonView>();
-        PlayerName = GlobalState.GetUser().username;
-        SceneManager.sceneLoaded += OnSceneFinishedLoading;
-        Debug.Log(PhotonNetwork.NickName);
+        //Instance = this;
+        //PhotonView = GetComponent<PhotonView>();
+        //PlayerName = GlobalState.GetUser().username;
+        //SceneManager.sceneLoaded += OnSceneFinishedLoading;
+        //Debug.Log(PhotonNetwork.NickName);
     }
 
     // Update is called once per frame
@@ -33,20 +33,31 @@ public class PlayerNetwork : MonoBehaviour
 
     private void OnSceneFinishedLoading(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == "SampleScene")
-        {
-            if (PhotonNetwork.IsMasterClient)
-            {
-                PhotonView.RPC("RPC_LoadGameOthers", RpcTarget.Others);
-                //PhotonView.RPC("RPC_CreatePlayer", RpcTarget.Others, PhotonNetwork.LocalPlayer);
-            }
-            //else
-                PhotonView.RPC("RPC_CreatePlayer", RpcTarget.All, PhotonNetwork.LocalPlayer);
-        }
+        //if (scene.name == "SampleScene")
+        //{
+        //    if (PhotonNetwork.IsMasterClient)
+        //    {
+        //        PhotonView.RPC("RPC_LoadGameOthers", RpcTarget.Others);
+        //        //PhotonView.RPC("RPC_CreatePlayer", RpcTarget.Others, PhotonNetwork.LocalPlayer);
+        //    }
+        //    //else
+        //        PhotonView.RPC("RPC_CreatePlayer", RpcTarget.All, PhotonNetwork.LocalPlayer);
+        //}
     }
 
     //PhotonView.RPC("RPC_CreatePlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer);
 
+    public void SendRPC(GameObject obj, Player player)
+    {
+        PhotonView.RPC("RPC_UpdatePlayerList", RpcTarget.All, PhotonNetwork.LocalPlayer);
+    }
+
+    [PunRPC]
+    private void RPC_UpdatePlayerList(Player player)
+    {
+        //PlayerManagement.Instance.AddPlayerGameObject(obj);
+        PlayerManagement.Instance.AddCardPlayer(player);
+    }
 
     public void AddCardsToPlayer(Player photonPlayer , List<Card> cards)
     {
@@ -62,11 +73,11 @@ public class PlayerNetwork : MonoBehaviour
 
     [PunRPC]
     private void RPC_AddCardsToPlayer(List<Card> cards) {
-        player.cards = cards;
-        foreach (Card card in cards)
-        {
-            Debug.Log(card.GetCardRank() +" "+ card.GetCardShape());
-        }
+        //player.cards = cards;
+        //foreach (Card card in cards)
+        //{
+        //    Debug.Log(card.GetCardRank() +" "+ card.GetCardShape());
+        //}
     }
 
     [PunRPC]
@@ -76,8 +87,8 @@ public class PlayerNetwork : MonoBehaviour
         Debug.Log(cardPlayer.NickName);
         GameObject obj = PhotonNetwork.Instantiate(Path.Combine("Prefabs", "Player"), Vector3.up, Quaternion.identity, 0);
         PlayerManagement.Instance.AddCardPlayer(cardPlayer);
-        player = obj.GetComponent<GamePlayer>();
-        player.username = cardPlayer.NickName;
+        //player = obj.GetComponent<GamePlayer>();
+        //player.username = cardPlayer.NickName;
 
         //Debug.Log("Player Created " + cardPlayer.NickName);
     }

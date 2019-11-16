@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Deck
 {
-    public List<Card> cards;
+    public List<Card> cards = new List<Card>();
 
     public int CardCount()
     {

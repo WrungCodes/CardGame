@@ -14,7 +14,7 @@ public class DelayStartLobbyController : MonoBehaviourPunCallbacks
 
 	public override void OnConnectedToMaster() //Callback function for when the first connection is established successfully.
 	{
-		PhotonNetwork.AutomaticallySyncScene = true; //Makes it so whatever scene the master client has loaded is the scene all other clients will load
+		//PhotonNetwork.AutomaticallySyncScene = true; //Makes it so whatever scene the master client has loaded is the scene all other clients will load
 		//delayStartButton.SetActive(true);
         DelayStart();
         //PhotonNetwork.PlayerList;

@@ -84,10 +84,10 @@ public class DelayStartWaitingRoomController : MonoBehaviourPunCallbacks
     {
         //Multiplayer scene is loaded to start the game
         startingGame = true;
-        if (!PhotonNetwork.IsMasterClient)
-            return;
-        PhotonNetwork.CurrentRoom.IsOpen = false;
-        PhotonNetwork.AutomaticallySyncScene = false;
+        //if (!PhotonNetwork.IsMasterClient)
+        //    return;
+        //PhotonNetwork.CurrentRoom.IsOpen = false;
+        //PhotonNetwork.AutomaticallySyncScene = false;
         PhotonNetwork.LoadLevel(multiplayerSceneIndex);
     }
 
