@@ -49,6 +49,33 @@ public class Card
        rank = r;  
 	}
 
+    public Card(string shape_string, string rank_string, string type_string)
+    {
+        for (Shape s = Shape.circle; s <= Shape.star; ++s)
+        {
+            if (s.ToString() == shape_string)
+            {
+                shape = s;
+            }
+        }
+
+        for (Rank r = Rank.one; r <= Rank.fourteen; ++r)
+        {
+            if (r.ToString() == rank_string)
+            {
+                rank = r;
+            }
+        }
+
+        for (Type t = Type.normal; t <= Type.jackpot; ++t)
+        {
+            if (t.ToString() == type_string)
+            {
+                type = t;
+            }
+        }
+    }
+
 
     public string GetCardRank()
     {

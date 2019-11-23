@@ -126,7 +126,7 @@ public class GameSetup : MonoBehaviour
 
     void SpawnCards(Card cardd)
     {
-        object[] instantiationData = { cardd };
+        object[] instantiationData = { cardd.GetCardShape(), cardd.GetCardRank(), cardd.GetCardType() };
 
         GameObject card = PhotonNetwork.InstantiateSceneObject(
             Path.Combine("Prefabs", "card"),
