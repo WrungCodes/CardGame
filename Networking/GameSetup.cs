@@ -33,6 +33,8 @@ public class GameSetup : MonoBehaviour
 
     private PhotonView PhotonView;
 
+    public Text usernameText;
+
     public Deck allCards;
 
     //public List<CardPlayer> CardPlayers = new List<CardPlayer>();
@@ -59,6 +61,8 @@ public class GameSetup : MonoBehaviour
             //PhotonView.RPC("RPC_SpawnCardsForAllUsers", RpcTarget.OthersBuffered);
             }
         }
+
+        usernameText.text = PhotonNetwork.NickName +" "+ PhotonNetwork.LocalPlayer.ActorNumber;
     }
 
     //void StartSpawning()
