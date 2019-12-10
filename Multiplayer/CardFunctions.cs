@@ -66,4 +66,14 @@ public class CardFunctions
 
         return cards;
     }
+
+    public Card PickSingleCard(DataManager dataManager)
+    {
+        return dataManager.GetAllCards()[0];
+    }
+
+    public Card GetCurrentPlayingCard(DataManager dataManager)
+    {
+        return dataManager.GetPlayingDeck()[0]; //PlayingDeck[PlayingDeck.Count - 1];
+    }
 }

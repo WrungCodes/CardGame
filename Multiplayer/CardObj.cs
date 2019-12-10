@@ -41,6 +41,17 @@ public class CardObj : MonoBehaviour
     }
 
     void OnMouseDown() {
+
+        if (!cardAnimator.iscardDealt)
+        {
+            return;
+        }
+
+        if (cardAnimator.isMovingToPosition)
+        {
+            return;
+        }
+
         cardAnimator.ReturnAllCardsToDefualt();
 
         if (this.gameObject.transform.IsChildOf(cardAnimator.gameObject.transform))
@@ -63,12 +74,7 @@ public class CardObj : MonoBehaviour
                     cardAnimator.PlayCard(this.gameObject);
                 }
             }
-
         }
-        //if (this.gameObject.transform.parent == cardAnimator.gameObject)
-        //{
-        //}
-
     }
 
     public void returnCardToDefualt()
@@ -77,7 +83,6 @@ public class CardObj : MonoBehaviour
         isActiveCard = false;
     }
 
-    // Update is called once per frame
     void Update()
     {
     }
@@ -124,18 +129,6 @@ public class CardObj : MonoBehaviour
 
     public void AddCardtoPlayingDeck()
     {
-        //PlayinDeck
-    }
 
-    //public IEnumerator MoveToPosition(Transform transform, Vector3 position, float timeToMove)
-    //{
-    //    var currentPos = transform.position;
-    //    var t = 0f;
-    //    while (t < 1)
-    //    {
-    //        t += Time.deltaTime / timeToMove;
-    //        transform.position = Vector3.Lerp(currentPos, position, t);
-    //        yield return null;
-    //    }
-    //}
+    }
 }

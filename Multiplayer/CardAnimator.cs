@@ -18,27 +18,28 @@ public class CardAnimator : MonoBehaviour
 
     public List<GameObject> PlayersObjectArray;
 
-    public GameObject CardManager;
 
     public GameObject gamePlayerPrefab;
 
     public Transform sp1;
     public Transform sp2;
-    //public Transform sp3;
     public Transform sp4;
-
     public Transform mainSp;
 
-    bool iscardDealt = false;
+    public bool iscardDealt = false;
     bool isInitialized = false;
+    public bool isMovingToPosition = false;
+
+    public GameObject CardManager;
+    public CardManager cardManager;
 
 
 
     // Start is called before the first frame update
     void Start()
     {
-        //GameObject a = Instantiate(gamePlayerPrefab, mainSp.position, Quaternion.identity);
-        //a.GetComponent<PlayerCardList>().SetNameText("Mallo");
+        cardManager = CardManager.GetComponent<CardManager>();
+
         SpawnPlayers();
         InitializeAllCard();
         isInitialized = true;
@@ -130,13 +131,6 @@ public class CardAnimator : MonoBehaviour
 
     public async Task DealCardsToPlayerAsync()
     {
-        //PlayersObjectArray = new List<GameObject>();
-        //PlayersObjectArray.Add(p1);
-        //PlayersObjectArray.Add(p2);
-        //foreach(Player pl in PhotonNetwork.PlayerList)
-        //{
-        //    PlayersObjectArray
-        //}
         int extralenght = 0;
 
         for (int x = 1; x <= Constants.PLAYER_INITIAL_CARDS; x++)
@@ -162,14 +156,14 @@ public class CardAnimator : MonoBehaviour
 
         StartCoroutine(MoveToPosition(AllCardsObj[AllCardsObj.Count - 1].gameObject.transform, PlayingDeck.transform.position, 0.6f));
         PlayingDeck.GetComponent<PlayingDeck>().cardObjs.Add(AllCardsObj[AllCardsObj.Count - 1]);
-        AllCardsObj[AllCardsObj.Count - 1].SetCardValue(CardManager.GetComponent<CardManager>().PlayingDeck[0]);
+        AllCardsObj[AllCardsObj.Count - 1].SetCardValue(cardManager.GetPlayingCard()[0]);
         AllCardsObj[AllCardsObj.Count - 1].SetCardFacedUp();
 
         AllCardsObj[AllCardsObj.Count - 1].gameObject.transform.SetParent(PlayingDeck.transform);
 
         AllCardsObj.Remove(AllCardsObj[AllCardsObj.Count - 1]);
 
-        PlayerCards playercard = CardManager.GetComponent<CardManager>().AllPlayerList.Where(ap => ap.playerName == PhotonNetwork.NickName).First();
+        PlayerCards playercard = cardManager.GetAllPlayerCards().Where(ap => ap.playerName == PhotonNetwork.NickName).First();
         int i = 0;
 
         GameObject player = PlayersObjectArray.Where(ap => ap.GetComponent<PlayerCardList>().isMine == true).First();
@@ -186,6 +180,7 @@ public class CardAnimator : MonoBehaviour
 
     public IEnumerator MoveToPosition(Transform transform, Vector3 position, float timeToMove)
     {
+        isMovingToPosition = true;
         var currentPos = transform.position;
         var t = 0f;
         while (t < 1)
@@ -194,12 +189,7 @@ public class CardAnimator : MonoBehaviour
             transform.position = Vector3.Lerp(currentPos, position, t);
             yield return null;
         }
-    }
-
-    public IEnumerator Wait()
-    {
-        yield return new WaitForSeconds(2);
-
+        isMovingToPosition = false;
     }
 
     public void ReturnAllCardsToDefualt()
@@ -273,8 +263,6 @@ public class CardAnimator : MonoBehaviour
         co.gameObject.transform.SetSiblingIndex(0);
         co.gameObject.transform.SetParent(PlayingDeck.transform);
         co.gameObject.transform.SetSiblingIndex(0);
-        //co.gameObject.GetComponent<SortingGroup>().sortingOrder = 1;
-
     }
 
     public void MoveCard(GameObject cardObject, Vector3 destinationGameObject)
@@ -285,9 +273,9 @@ public class CardAnimator : MonoBehaviour
     public void AskForMarket()
     {
         Debug.Log("Startied");
-        CardManager cm = CardManager.GetComponent<CardManager>();
+        //CardManager cm = CardManager.GetComponent<CardManager>();
 
-        cm.DealCardFromMarket();
+        cardManager.DealCardFromMarket();
     }
 
     public void AddCardToPlayerDeck(Card card, string playerId)
@@ -303,41 +291,42 @@ public class CardAnimator : MonoBehaviour
             co.SetCardFacedUp();
             AllCardsObj.Remove(co);
 
-            CardObj lastCardObject = listOfPlayerCard[listOfPlayerCard.Count - 1];
-
-            listOfPlayerCard.Add(co);
-
             if (listOfPlayerCard.Count == 0)
             {
+                listOfPlayerCard.Add(co);
                 MoveCard(co.gameObject, playerObject.transform.position);
             }
             else
             {
+                CardObj lastCardObject = listOfPlayerCard[listOfPlayerCard.Count - 1];
+
+                listOfPlayerCard.Add(co);
+
                 MoveCard(co.gameObject, new Vector3(
-                lastCardObject.gameObject.transform.position.x + (1 * Constants.CARDS_SPACE_OFFSET),
+                lastCardObject.gameObject.transform.position.x + (Constants.PLAYER_CARDS_SPACE_OFFSET),
                 (lastCardObject.gameObject.transform.position.y)
                 ));
             }
 
             co.gameObject.transform.SetParent(playerObject.transform);
 
-            SpaceAllCards();
+            //SpaceAllCards();
         }
         else
         {
             CardObj co = AllCardsObj[AllCardsObj.Count - 1];
             AllCardsObj.Remove(co);
 
-            CardObj lastCardObject = listOfPlayerCard[listOfPlayerCard.Count - 1];
-
-            listOfPlayerCard.Add(co);
-
             if (listOfPlayerCard.Count == 0)
             {
+                listOfPlayerCard.Add(co);
                 MoveCard(co.gameObject, playerObject.transform.position);
             }
             else
             {
+                CardObj lastCardObject = listOfPlayerCard[listOfPlayerCard.Count - 1];
+
+                listOfPlayerCard.Add(co);
                 MoveCard(co.gameObject, new Vector3(
                 lastCardObject.gameObject.transform.position.x + Constants.CARDS_SPACE_OFFSET,
                 (lastCardObject.gameObject.transform.position.y)
@@ -351,13 +340,13 @@ public class CardAnimator : MonoBehaviour
     {
         CardObj card = cardGameObject.GetComponent<CardObj>();
 
-        CardManager cm = CardManager.GetComponent<CardManager>();
+        //CardManager cm = CardManager.GetComponent<CardManager>();
 
         Card playedCard = card.GetCard();
 
-        Card currentCard = cm.GetCurrentPlayingCard();
+        Card currentCard = cardManager.GetPlayingCard()[cardManager.GetPlayingCard().Count - 1];
 
-        cm.PlayCard(playedCard);
+        cardManager.PlayCard(playedCard);
     }
 
     public GameObject GetPlayerObject(string playerId)

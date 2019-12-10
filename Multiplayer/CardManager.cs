@@ -11,37 +11,35 @@ public class CardManager : MonoBehaviour
 {
     CardFunctions cardFunctions;
 
-    public List<Card> AllCards;
-
-    public List<Card> PlayingDeck;
-
-    public List<PlayerCards> AllPlayerList;
-
     public CardAnimator CardAnimator;
 
     public Text text;
 
-    //public List<Card> OwnCards;
-
     PhotonView photonView;
 
-    // Start is called before the first frame update
+    DataManager dataManager;
+
     void Start()
     {
+        dataManager = new DataManager();
+
         photonView = GetComponent<PhotonView>();
 
         cardFunctions = new CardFunctions();
 
-        CreatePlayerCardForAllPlayers();
+        dataManager.AllPlayerList = PlayerFunctions.CreatePlayerCardForAllPlayers(dataManager.GetPlayerFromPlayerCards());
 
+        StartGame();
+    }
+
+    private void StartGame()
+    {
         if (PhotonNetwork.IsMasterClient)
         {
             SetAllPlayersAllCards();
             InitilizeAllCards();
             DealCardsToAllPlayers();
         }
-
-        //DebugCards();
     }
 
     private void SetAllPlayersAllCards()
@@ -58,67 +56,14 @@ public class CardManager : MonoBehaviour
     private void RPC_SetAllPlayerAllCards(string rank, string suit)
     {
         CardSerializer datas = new CardSerializer(rank, suit);
-        AllCards.Add(new Card(datas));
-    }
 
-    public void DebugCards()
-    {
-        foreach(PlayerCards pc in AllPlayerList)
-        {
-            Debug.Log(pc.playerName);
-            foreach(Card card in pc.cards)
-            {
-                Debug.Log(card.GetRank() +"  "+ card.GetSuit());
-            }
-        }
+        dataManager.AddCardsToAllCards(new Card(datas));
     }
 
     public void InitilizeAllCards()
     {
-        //AllCards = cardFunctions.InitializeCards();
-        PlayingDeck = new List<Card>();
-
-        CardSerializer datas = PickSingleCard().ConvertCardToCardSerializer();
+        CardSerializer datas = cardFunctions.PickSingleCard(dataManager).ConvertCardToCardSerializer();
         photonView.RPC("RPC_SetPlayinCard", RpcTarget.All, datas.Rank, datas.Suit);
-    }
-
-    public void CreatePlayerCardForAllPlayers()
-    {
-        foreach (Player player in PhotonNetwork.PlayerList)
-        {
-            AllPlayerList.Add(new PlayerCards( player.NickName, new List<Card>()));
-        }
-    }
-
-    public void DealCardsToAllPlayers()
-    {
-        for (int x = 1; x <= Constants.PLAYER_INITIAL_CARDS; x++)
-        {
-            foreach (Player player in PhotonNetwork.PlayerList)
-            {
-                DealCardToPlayer(PickSingleCard(), player.NickName);
-            }
-        }
-    }
-
-    public void DealCardToPlayer(Card card,  string playerId)
-    {
-        CardSerializer datas = card.ConvertCardToCardSerializer();
-
-        photonView.RPC("RPC_CustomCardSerialization", RpcTarget.All, datas.Rank, datas.Suit, playerId);
-    }
-
-    [PunRPC]
-    private void RPC_CustomCardSerialization(string rank, string suit, string playerId)
-    {
-        CardSerializer datas = new CardSerializer(rank, suit);
-
-        PlayerCards playerCard = AllPlayerList.Where(ap => ap.playerName == playerId).First();
-
-        Card card = new Card(datas);
-
-        playerCard.cards.Add(card);
-        AllCards.Remove(GetSameCard(card, AllCards));
     }
 
     [PunRPC]
@@ -127,33 +72,61 @@ public class CardManager : MonoBehaviour
         CardSerializer datas = new CardSerializer(rank, suit);
 
         Card card = new Card(datas);
-        PlayingDeck.Add(card);
-        AllCards.Remove(GetSameCard(card, AllCards));
+
+        dataManager.AddCardsToPlayingDeck(card);
+
+        card = PlayerFunctions.GetSameCard(card, GetAllCards());
+
+        dataManager.RemoveCardsFromAllCards(card);
     }
 
-    public Card DrawSingleCard()
+    public void DealCardsToAllPlayers()
     {
-        Card drawnCard = AllCards[0];
-        AllCards.RemoveAt(0);
-        return drawnCard;
+        for (int x = 1; x <= Constants.PLAYER_INITIAL_CARDS; x++)
+        {
+            foreach (Player player in PhotonNetwork.PlayerList)
+            {
+                DealCardToPlayer(cardFunctions.PickSingleCard(dataManager), player.NickName);
+            }
+        }
     }
 
-    public Card PickSingleCard()
+    public void DealCardToPlayer(Card card,  string playerId)
     {
-        Card drawnCard = AllCards[0];
-        return drawnCard;
+        CardSerializer datas = card.ConvertCardToCardSerializer();
+
+        photonView.RPC("RPC_DealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
     }
 
-    public Card GetCurrentPlayingCard()
+    [PunRPC]
+    private void RPC_DealCardToPlayer(string rank, string suit, string playerId)
     {
-        return PlayingDeck[PlayingDeck.Count - 1];
+        CardSerializer datas = new CardSerializer(rank, suit);
+
+        PlayerCards playerCards = PlayerFunctions.GetPlayer(playerId, GetAllPlayerCards());
+
+        Card card = new Card(datas);
+
+        playerCards.AddCards(card);
+
+        card = PlayerFunctions.GetSameCard(card, playerCards.GetAllCards());
+
+        dataManager.RemoveCardsFromAllCards(card);
     }
 
-
-    // Update is called once per frame
-    void Update()
+    public List<Card> GetAllCards()
     {
-        
+        return dataManager.GetAllCards();
+    }
+
+    public List<PlayerCards> GetAllPlayerCards()
+    {
+        return dataManager.GetPlayerFromPlayerCards();
+    }
+
+    public List<Card> GetPlayingCard()
+    {
+        return dataManager.GetPlayingDeck();
     }
 
     public void PlayCard(Card card)
@@ -169,34 +142,30 @@ public class CardManager : MonoBehaviour
     }
 
     [PunRPC]
-    private void RPC_AskMasterForMarketCard(string playerId)
-    {
-        Card card = PickSingleCard();
-        CardSerializer datas = card.ConvertCardToCardSerializer();
-
-        photonView.RPC("RPC_MasterDealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
-    }
-
-
-    [PunRPC]
     private void RPC_MasterDealCardToPlayer(string rank, string suit, string playerId)
     {
         CardSerializer datas = new CardSerializer(rank, suit);
 
         Card card = new Card(datas);
 
-        PlayerCards playerCards = GetPlayer(playerId);
+        PlayerCards playerCards = PlayerFunctions.GetPlayer(playerId, dataManager.GetPlayerFromPlayerCards()); //GetPlayer(playerId);
 
-        playerCards.cards.Add(card);
+        playerCards.AddCards(card);
 
-        //if (PhotonNetwork.IsMasterClient)
-        //{
-            card = GetSameCard(card, AllCards);
+        card = PlayerFunctions.GetSameCard(card, GetAllCards());
 
-            AllCards.Remove(card);
-        //}
+        dataManager.RemoveCardsFromAllCards(card);
 
         CardAnimator.GetComponent<CardAnimator>().AddCardToPlayerDeck(card, playerId);
+    }
+
+    [PunRPC]
+    private void RPC_AskMasterForMarketCard(string playerId)
+    {
+        Card card = cardFunctions.PickSingleCard(dataManager);
+        CardSerializer datas = card.ConvertCardToCardSerializer();
+
+        photonView.RPC("RPC_MasterDealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
     }
 
     [PunRPC]
@@ -206,25 +175,14 @@ public class CardManager : MonoBehaviour
 
         Card card = new Card(datas);
 
-        PlayerCards playerCards = GetPlayer(playerId);
+        PlayerCards playerCards = PlayerFunctions.GetPlayer(playerId, dataManager.GetPlayerFromPlayerCards());
 
-        card = GetSameCard(card, playerCards.cards);
+        card = PlayerFunctions.GetSameCard(card, playerCards.GetAllCards());
 
-        PlayingDeck.Add(card);
+        dataManager.AddCardsToPlayingDeck(card);
 
-        playerCards.cards.Remove(card);
+        playerCards.RemoveCards(card);
 
         CardAnimator.GetComponent<CardAnimator>().AddCardtoPlayingDeck(card, playerId);
-
-    }
-
-    public PlayerCards GetPlayer(string playerId)
-    {
-        return AllPlayerList.Where(ap => ap.playerName == playerId).First();
-    }
-
-    public Card GetSameCard(Card card, List<Card> playerCards)
-    {
-       return playerCards.Where(c => c.Rank == card.Rank && c.Suit == card.Suit).First();
     }
 }
