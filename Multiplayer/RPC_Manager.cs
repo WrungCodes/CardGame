@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
 
-public static class RPC_Manager
+public class RPC_Manager
 {
-    //[PunRPC]
-    //private void RPC_SetAllPlayerAllCards(string rank, string suit)
-    //{
-    //    CardSerializer datas = new CardSerializer(rank, suit);
-    //    AllCards.Add(new Card(datas));
-    //}
+    DataManager dataManager;
+
+    PhotonView photonView;
+
+    public RPC_Manager(DataManager _dataManager, PhotonView _photonView)
+    {
+        dataManager = _dataManager;
+        photonView = _photonView;
+    }
+    
 }

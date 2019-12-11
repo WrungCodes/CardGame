@@ -19,11 +19,15 @@ public class CardManager : MonoBehaviour
 
     DataManager dataManager;
 
+    RPC_Manager RPC_Manager;
+
     void Start()
     {
         dataManager = new DataManager();
 
         photonView = GetComponent<PhotonView>();
+
+        RPC_Manager = new RPC_Manager(dataManager, photonView);
 
         cardFunctions = new CardFunctions();
 
