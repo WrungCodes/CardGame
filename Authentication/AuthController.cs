@@ -10,7 +10,7 @@ public class AuthController : MonoBehaviour
     public static fsSerializer serializer = new fsSerializer(); 
 
     private string firebase_url = "https://cardgame-944de.firebaseio.com/users";
-    private string firebase_signup_url = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=";
+    //private string firebase_signup_url = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=";
     private string firebase_api_key = "AIzaSyBJjoympIt56cFec3EV5yYdD92SYw7daP0";
 
     public GameObject login_panel;

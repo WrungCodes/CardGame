@@ -28,7 +28,8 @@ public class GlobalState : MonoBehaviour
             Destroy(gameObject);
         }
 
-        InvokeRepeating("RefreshToken", 2400, 600);
+        InvokeRepeating("RefreshToken", 1200, 1200);
+
     }
 
     // Update is called once per frame
@@ -63,7 +64,7 @@ public class GlobalState : MonoBehaviour
         signedInUser.wallet_balance = amount;
     }
 
-    public static void RefreshToken()
+    public void RefreshToken()
     {
         string token = PlayerPrefs.GetString("refresh_token");
 

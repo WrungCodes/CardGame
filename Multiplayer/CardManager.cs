@@ -27,9 +27,10 @@ public class CardManager : MonoBehaviour
 
         photonView = GetComponent<PhotonView>();
 
-        RPC_Manager = new RPC_Manager(dataManager, photonView);
-
         cardFunctions = new CardFunctions();
+
+        RPC_Manager = new RPC_Manager(dataManager, photonView, CardAnimator, cardFunctions);
+
 
         dataManager.AllPlayerList = PlayerFunctions.CreatePlayerCardForAllPlayers(dataManager.GetPlayerFromPlayerCards());
 
@@ -52,7 +53,10 @@ public class CardManager : MonoBehaviour
         foreach (Card card in InstalizedCards)
         {
             CardSerializer datas = card.ConvertCardToCardSerializer();
-            photonView.RPC("RPC_SetAllPlayerAllCards", RpcTarget.All, datas.Rank, datas.Suit);
+
+            RPC_Manager.SetAllPlayerAllCards(datas);
+
+            //photonView.RPC("RPC_SetAllPlayerAllCards", RpcTarget.All, datas.Rank, datas.Suit);
         }
     }
 
@@ -67,7 +71,10 @@ public class CardManager : MonoBehaviour
     public void InitilizeAllCards()
     {
         CardSerializer datas = cardFunctions.PickSingleCard(dataManager).ConvertCardToCardSerializer();
-        photonView.RPC("RPC_SetPlayinCard", RpcTarget.All, datas.Rank, datas.Suit);
+
+        RPC_Manager.SetPlayinCard(datas);
+
+        //photonView.RPC("RPC_SetPlayinCard", RpcTarget.All, datas.Rank, datas.Suit);
     }
 
     [PunRPC]
@@ -99,7 +106,9 @@ public class CardManager : MonoBehaviour
     {
         CardSerializer datas = card.ConvertCardToCardSerializer();
 
-        photonView.RPC("RPC_DealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
+        RPC_Manager.DealCardToPlayer(datas, playerId);
+
+        //photonView.RPC("RPC_DealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
     }
 
     [PunRPC]
@@ -133,16 +142,19 @@ public class CardManager : MonoBehaviour
         return dataManager.GetPlayingDeck();
     }
 
-    public void PlayCard(Card card)
-    {
-        CardSerializer datas = card.ConvertCardToCardSerializer();
-
-        photonView.RPC("RPC_PlayCard", RpcTarget.All, datas.Rank, datas.Suit, PhotonNetwork.LocalPlayer.NickName);
-    }
-
     public void DealCardFromMarket()
     {
-        photonView.RPC("RPC_AskMasterForMarketCard", RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.NickName);
+        RPC_Manager.AskMasterForMarketCard();
+        //photonView.RPC("RPC_AskMasterForMarketCard", RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.NickName);
+    }
+
+    [PunRPC]
+    private void RPC_AskMasterForMarketCard(string playerId)
+    {
+        Card card = cardFunctions.PickSingleCard(dataManager);
+        CardSerializer datas = card.ConvertCardToCardSerializer();
+
+        photonView.RPC("RPC_MasterDealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
     }
 
     [PunRPC]
@@ -163,13 +175,14 @@ public class CardManager : MonoBehaviour
         CardAnimator.GetComponent<CardAnimator>().AddCardToPlayerDeck(card, playerId);
     }
 
-    [PunRPC]
-    private void RPC_AskMasterForMarketCard(string playerId)
+
+    public void PlayCard(Card card)
     {
-        Card card = cardFunctions.PickSingleCard(dataManager);
         CardSerializer datas = card.ConvertCardToCardSerializer();
 
-        photonView.RPC("RPC_MasterDealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
+        RPC_Manager.PlayCard(datas);
+
+        //photonView.RPC("RPC_PlayCard", RpcTarget.All, datas.Rank, datas.Suit, PhotonNetwork.LocalPlayer.NickName);
     }
 
     [PunRPC]

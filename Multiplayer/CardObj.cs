@@ -65,6 +65,8 @@ public class CardObj : MonoBehaviour
             {
                 if (isActiveCard == false && isMineCard)
                 {
+                    this.gameObject.transform.SetSiblingIndex(0);
+
                     this.gameObject.transform.position = new Vector3(this.gameObject.transform.position.x, this.gameObject.transform.position.y + Constants.CARDS_ACTIVE_OFFSET);
                     isActiveCard = true;
                 }
