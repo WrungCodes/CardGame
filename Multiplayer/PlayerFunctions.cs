@@ -12,7 +12,12 @@ public static class PlayerFunctions
     {
         foreach (Player player in PhotonNetwork.PlayerList)
         {
-            AllPlayerList.Add(new PlayerCards(player.NickName, new List<Card>()));
+            bool isTurn = false;
+
+            if (player.IsMasterClient)
+                isTurn = true;
+
+            AllPlayerList.Add(new PlayerCards(player.NickName, new List<Card>(), player, isTurn));
         }
 
         return AllPlayerList;

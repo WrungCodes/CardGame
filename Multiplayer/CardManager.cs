@@ -31,7 +31,6 @@ public class CardManager : MonoBehaviour
 
         RPC_Manager = new RPC_Manager(dataManager, photonView, CardAnimator, cardFunctions);
 
-
         dataManager.AllPlayerList = PlayerFunctions.CreatePlayerCardForAllPlayers(dataManager.GetPlayerFromPlayerCards());
 
         StartGame();
@@ -56,7 +55,7 @@ public class CardManager : MonoBehaviour
 
             RPC_Manager.SetAllPlayerAllCards(datas);
 
-            //photonView.RPC("RPC_SetAllPlayerAllCards", RpcTarget.All, datas.Rank, datas.Suit);
+            //photonView.RPC("RPC_SetAllPlayerAllCards", RpcTarget.AllBuffered, datas.Rank, datas.Suit);
         }
     }
 
@@ -74,7 +73,7 @@ public class CardManager : MonoBehaviour
 
         RPC_Manager.SetPlayinCard(datas);
 
-        //photonView.RPC("RPC_SetPlayinCard", RpcTarget.All, datas.Rank, datas.Suit);
+        //photonView.RPC("RPC_SetPlayinCard", RpcTarget.AllBuffered, datas.Rank, datas.Suit);
     }
 
     [PunRPC]
@@ -108,7 +107,7 @@ public class CardManager : MonoBehaviour
 
         RPC_Manager.DealCardToPlayer(datas, playerId);
 
-        //photonView.RPC("RPC_DealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
+        //photonView.RPC("RPC_DealCardToPlayer", RpcTarget.AllBuffered, datas.Rank, datas.Suit, playerId);
     }
 
     [PunRPC]
@@ -144,6 +143,15 @@ public class CardManager : MonoBehaviour
 
     public void DealCardFromMarket()
     {
+        PlayerCards playerCards = PlayerFunctions.GetPlayer(PhotonNetwork.NickName, dataManager.GetPlayerFromPlayerCards()); //GetPlayer(playerId);
+
+        if (!playerCards.isTurn)
+        {
+            return;
+        }
+
+        playerCards.UnSetTurn();
+
         RPC_Manager.AskMasterForMarketCard();
         //photonView.RPC("RPC_AskMasterForMarketCard", RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.NickName);
     }
@@ -154,11 +162,112 @@ public class CardManager : MonoBehaviour
         Card card = cardFunctions.PickSingleCard(dataManager);
         CardSerializer datas = card.ConvertCardToCardSerializer();
 
-        photonView.RPC("RPC_MasterDealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
+        photonView.RPC("RPC_MasterDealCardToPlayer", RpcTarget.AllBuffered, datas.Rank, datas.Suit, playerId);
     }
 
     [PunRPC]
     private void RPC_MasterDealCardToPlayer(string rank, string suit, string playerId)
+    {
+        CardSerializer datas = new CardSerializer(rank, suit);
+
+        Card card = new Card(datas);
+
+        PlayerCards playerCards = PlayerFunctions.GetPlayer(playerId, dataManager.GetPlayerFromPlayerCards()); //GetPlayer(playerId);
+
+        playerCards.AddCards(card);
+
+        Debug.Log("Using this RPC");
+
+        // Set next turn
+        playerCards.UnSetTurn();
+
+        Player nextPlayer = playerCards.player.GetNext();
+
+        PlayerCards nextPlayerPlayerCards = PlayerFunctions.GetPlayer(nextPlayer.NickName, dataManager.GetPlayerFromPlayerCards());
+
+        nextPlayerPlayerCards.SetToTurn();
+        // End set turn
+
+        card = PlayerFunctions.GetSameCard(card, GetAllCards());
+
+        dataManager.RemoveCardsFromAllCards(card);
+
+        CardAnimator.GetComponent<CardAnimator>().AddCardToPlayerDeck(card, playerId);
+    }
+
+
+
+
+    public void PlayCard(Card card)
+    {
+        PlayerCards playerCards = PlayerFunctions.GetPlayer(PhotonNetwork.NickName, dataManager.GetPlayerFromPlayerCards()); //GetPlayer(playerId);
+
+        if (!playerCards.isTurn)
+        {
+            return;
+        }
+
+        playerCards.UnSetTurn();
+
+        CardSerializer datas = card.ConvertCardToCardSerializer();
+
+        RPC_Manager.PlayCard(datas);
+
+        //photonView.RPC("RPC_PlayCard", RpcTarget.AllBuffered, datas.Rank, datas.Suit, PhotonNetwork.LocalPlayer.NickName);
+    }
+
+    [PunRPC]
+    private void RPC_PlayCard(string rank, string suit, string playerId)
+    {
+        CardSerializer datas = new CardSerializer(rank, suit);
+
+        Card card = new Card(datas);
+
+        PlayerCards playerCards = PlayerFunctions.GetPlayer(playerId, dataManager.GetPlayerFromPlayerCards());
+
+        List<Card> allCards = playerCards.GetAllCards();
+
+        // Set next turn
+        playerCards.UnSetTurn();
+
+        Player nextPlayer = playerCards.player.GetNext();
+
+        PlayerCards nextPlayerPlayerCards = PlayerFunctions.GetPlayer(nextPlayer.NickName, dataManager.GetPlayerFromPlayerCards());
+
+        //nextPlayerPlayerCards.SetToTurn();
+        // End set turn
+
+
+        //Card currentCard = allCards[allCards.Count - 1];
+
+        card = PlayerFunctions.GetSameCard(card, allCards);
+
+        dataManager.AddCardsToPlayingDeck(card);
+
+        playerCards.RemoveCards(card);
+
+        //CardAnimator.GetComponent<CardAnimator>().DisableCardInPlayingDeck();
+
+        CardAnimator.GetComponent<CardAnimator>().AddCardtoPlayingDeck(card, playerId);
+
+        CarryCardAction(card, playerCards.player);
+
+        // Set Turn 
+        //nextPlayerPlayerCards.SetToTurn();
+        // End set turn
+    }
+
+
+    public void DealACard(string playerId)
+    {
+        Card card = cardFunctions.PickSingleCard(dataManager);
+        CardSerializer datas = card.ConvertCardToCardSerializer();
+
+        photonView.RPC("RPC_MasterDealCard", RpcTarget.AllBuffered, datas.Rank, datas.Suit, playerId);
+    }
+
+    [PunRPC]
+    private void RPC_MasterDealCard(string rank, string suit, string playerId)
     {
         CardSerializer datas = new CardSerializer(rank, suit);
 
@@ -175,31 +284,66 @@ public class CardManager : MonoBehaviour
         CardAnimator.GetComponent<CardAnimator>().AddCardToPlayerDeck(card, playerId);
     }
 
-
-    public void PlayCard(Card card)
+    public IEnumerator WaitForTime(float timeToMove, string playerName, int numberOfCard)
     {
-        CardSerializer datas = card.ConvertCardToCardSerializer();
-
-        RPC_Manager.PlayCard(datas);
-
-        //photonView.RPC("RPC_PlayCard", RpcTarget.All, datas.Rank, datas.Suit, PhotonNetwork.LocalPlayer.NickName);
+        for (int i = 0; i < numberOfCard; i++)
+        {
+            Debug.Log("Got 4");
+            DealACard(playerName);
+            yield return new WaitForSeconds(timeToMove);
+        }
     }
 
-    [PunRPC]
-    private void RPC_PlayCard(string rank, string suit, string playerId)
+    public void CarryCardAction(Card card, Player player)
     {
-        CardSerializer datas = new CardSerializer(rank, suit);
+        switch (card.GetRank())
+        {
+            case Ranks.two:
+                PickSomeCards(2, player.GetNext());
+                GetPlayerN(player.GetNext().GetNext()).SetToTurn();
+                break;
 
-        Card card = new Card(datas);
+            case Ranks.one:
+                GetPlayerN(player).SetToTurn();
+                break;
 
-        PlayerCards playerCards = PlayerFunctions.GetPlayer(playerId, dataManager.GetPlayerFromPlayerCards());
+            case Ranks.fourteen:
+                foreach(Player p in PhotonNetwork.PlayerList)
+                {
+                    if(p != player)
+                    {
+                        PickSomeCards(1, p);
+                    }
+                }
+                GetPlayerN(player).SetToTurn();
+                break;
 
-        card = PlayerFunctions.GetSameCard(card, playerCards.GetAllCards());
+            case Ranks.five:
+                PickSomeCards(3, player.GetNext());
+                GetPlayerN(player.GetNext().GetNext()).SetToTurn();
+                break;
 
-        dataManager.AddCardsToPlayingDeck(card);
+            case Ranks.eight:
+                GetPlayerN(player.GetNext().GetNext()).SetToTurn();
+                break;
 
-        playerCards.RemoveCards(card);
+            case Ranks.Whot:
+                break;
 
-        CardAnimator.GetComponent<CardAnimator>().AddCardtoPlayingDeck(card, playerId);
+            default:
+                GetPlayerN(player.GetNext()).SetToTurn();
+                break;
+        }
     }
+
+    public PlayerCards GetPlayerN(Player player)
+    {
+        return PlayerFunctions.GetPlayer(player.NickName, dataManager.GetPlayerFromPlayerCards());
+    }
+
+    public void PickSomeCards(int numberOfCard, Player playerToPick)
+    {
+        StartCoroutine(WaitForTime(4f, playerToPick.NickName, numberOfCard));
+    }
+
 }

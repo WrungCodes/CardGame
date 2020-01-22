@@ -187,6 +187,7 @@ public class CardAnimator : MonoBehaviour
             yield return null;
         }
         isMovingToPosition = false;
+        DisableCardInPlayingDeck();
     }
 
     public void ReturnAllCardsToDefualt()
@@ -230,6 +231,13 @@ public class CardAnimator : MonoBehaviour
         }
     }
 
+    public void DisableCardInPlayingDeck()
+    {
+        List<CardObj> listOfPlayingCard = PlayingDeck.GetComponent<PlayingDeck>().cardObjs;
+        CardObj co = listOfPlayingCard[listOfPlayingCard.Count - 2];
+        co.gameObject.SetActive(false);
+    }
+
     public void AddCardtoPlayingDeck(Card card, string playerId)
     {
         GameObject playerObject = GetPlayerObject(playerId);
@@ -262,11 +270,11 @@ public class CardAnimator : MonoBehaviour
     private void AddCardToPlayingDeck(CardObj co)
     {
         PlayingDeck.GetComponent<PlayingDeck>().cardObjs.Add(co);
-        co.gameObject.transform.SetSiblingIndex(0);
+        //co.gameObject.transform.SetSiblingIndex(0);
         MoveCard(co.gameObject, PlayingDeck.transform.position);
-        co.gameObject.transform.SetSiblingIndex(0);
+        //co.gameObject.transform.SetSiblingIndex(0);
         co.gameObject.transform.SetParent(PlayingDeck.transform);
-        co.gameObject.transform.SetSiblingIndex(0);
+        //co.gameObject.transform.SetSiblingIndex(0);
     }
 
     public void MoveCard(GameObject cardObject, Vector3 destinationGameObject)
@@ -344,7 +352,15 @@ public class CardAnimator : MonoBehaviour
 
         Card currentCard = cardManager.GetPlayingCard()[cardManager.GetPlayingCard().Count - 1];
 
-        cardManager.PlayCard(playedCard);
+        if (playedCard.GetRank() == currentCard.GetRank() || playedCard.GetSuit() == currentCard.GetSuit() || playedCard.GetSuit() == Suits.Whot)
+        {
+            cardManager.PlayCard(playedCard);
+        }
+        else
+        {
+            Debug.Log("Invalid Card Play Another");
+        }
+
     }
 
     public GameObject GetPlayerObject(string playerId)

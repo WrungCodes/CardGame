@@ -19,7 +19,7 @@ public class CardFunctions
 
         cards = RemoveInvalidCards(cards);
 
-        cards = AddWhotCards(cards);
+        //cards = AddWhotCards(cards);
 
         cards = ShuffleCards(cards);
 

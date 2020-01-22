@@ -23,7 +23,7 @@ public class RPC_Manager
 
     public void SetAllPlayerAllCards(CardSerializer datas)
     {
-        photonView.RPC("RPC_SetAllPlayerAllCards", RpcTarget.All, datas.Rank, datas.Suit);
+        photonView.RPC("RPC_SetAllPlayerAllCards", RpcTarget.AllBuffered, datas.Rank, datas.Suit);
     }
 
     [PunRPC]
@@ -36,7 +36,7 @@ public class RPC_Manager
 
     public void SetPlayinCard(CardSerializer datas)
     {
-        photonView.RPC("RPC_SetPlayinCard", RpcTarget.All, datas.Rank, datas.Suit);
+        photonView.RPC("RPC_SetPlayinCard", RpcTarget.AllBuffered, datas.Rank, datas.Suit);
     }
 
     [PunRPC]
@@ -55,7 +55,7 @@ public class RPC_Manager
 
     public void DealCardToPlayer(CardSerializer datas, string playerId)
     {
-        photonView.RPC("RPC_DealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
+        photonView.RPC("RPC_DealCardToPlayer", RpcTarget.AllBuffered, datas.Rank, datas.Suit, playerId);
     }
 
     [PunRPC]
@@ -76,7 +76,7 @@ public class RPC_Manager
 
     public void PlayCard(CardSerializer datas)
     { 
-        photonView.RPC("RPC_PlayCard", RpcTarget.All, datas.Rank, datas.Suit, PhotonNetwork.LocalPlayer.NickName);
+        photonView.RPC("RPC_PlayCard", RpcTarget.AllBuffered, datas.Rank, datas.Suit, PhotonNetwork.LocalPlayer.NickName);
     }
 
     [PunRPC]
@@ -108,7 +108,7 @@ public class RPC_Manager
         Card card = cardFunctions.PickSingleCard(dataManager);
         CardSerializer datas = card.ConvertCardToCardSerializer();
 
-        photonView.RPC("RPC_MasterDealCardToPlayer", RpcTarget.All, datas.Rank, datas.Suit, playerId);
+        photonView.RPC("RPC_MasterDealCardToPlayer", RpcTarget.AllBuffered, datas.Rank, datas.Suit, playerId);
     }
 
     [PunRPC]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Realtime;
 using UnityEngine;
 
 
@@ -10,6 +11,8 @@ public class PlayerCards
     public List<Card> cards;
     public string playerName;
     public bool isTurn = false;
+
+    public Player player;
 
     public void SetToTurn()
     {
@@ -36,9 +39,11 @@ public class PlayerCards
         cards.Remove(card);
     }
 
-    public PlayerCards(string _playerName, List<Card> _cards)
+    public PlayerCards(string _playerName, List<Card> _cards, Player _player, bool _isTurn)
     {
         playerName = _playerName;
         cards = _cards;
+        player = _player;
+        isTurn = _isTurn;
     }
 }
