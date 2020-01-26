@@ -343,7 +343,12 @@ public class CardManager : MonoBehaviour
 
     public void PickSomeCards(int numberOfCard, Player playerToPick)
     {
-        StartCoroutine(WaitForTime(4f, playerToPick.NickName, numberOfCard));
+        //StartCoroutine(WaitForTime(4f, playerToPick.NickName, numberOfCard));
+
+        for (int i = 0; i < numberOfCard; i++)
+        {
+            DealACard(playerToPick.NickName);
+        }
     }
 
 }
