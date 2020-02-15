@@ -6,6 +6,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 public class CardAnimator : MonoBehaviour
 {
@@ -13,6 +14,21 @@ public class CardAnimator : MonoBehaviour
 
     public GameObject PlayingDeck;
 
+
+    ImageDisplay ImageDisplay;
+
+    public GameObject PlayCardPopUp;
+
+    public Image SuitImage;
+    public Image RankImage1;
+    public Image RankImage2;
+
+    GameObject CurrentCardObj;
+
+    public GameObject GotoMarketPopUp;
+
+    public bool isGotoMarketPopUp = false;
+    public bool isPlayCardPopUp = false;
 
     public List<CardObj> AllCardsObj;
 
@@ -30,12 +46,23 @@ public class CardAnimator : MonoBehaviour
     bool isInitialized = false;
     public bool isMovingToPosition = false;
 
+    public bool isFirstCardActionDone = false;
+
+    public bool showPopUp = false;
+
     public GameObject CardManager;
     public CardManager cardManager;
+
+    public GameObject playerGameObject;
+    //private float PlayerCardSliderSpeed = 3f;
+    //public Slider PlayerCardSlider;
+    public Scrollbar PlayerCardScrollBar;
+
 
     // Start is called before the first frame update
     void Start()
     {
+        ImageDisplay = GameObject.FindWithTag("ImageDisplay").GetComponent<ImageDisplay>();
         cardManager = CardManager.GetComponent<CardManager>();
 
         SpawnPlayers();
@@ -61,10 +88,10 @@ public class CardAnimator : MonoBehaviour
 
             if (player.IsLocal)
             {
-                GameObject p = Instantiate(gamePlayerPrefab, mainSp.position, Quaternion.identity);
-                p.GetComponent<PlayerCardList>().isMine = true;
-                p.GetComponent<PlayerCardList>().SetNameText(player.NickName);
-                PlayersObjectArray.Add(p);
+                playerGameObject = Instantiate(gamePlayerPrefab, mainSp.position, Quaternion.identity);
+                playerGameObject.GetComponent<PlayerCardList>().isMine = true;
+                playerGameObject.GetComponent<PlayerCardList>().SetNameText(player.NickName);
+                PlayersObjectArray.Add(playerGameObject);
             }
             else
             {
@@ -81,7 +108,7 @@ public class CardAnimator : MonoBehaviour
         {
             if (player.GetNext() == PhotonNetwork.LocalPlayer)
             {
-                 return sp2;
+                return sp2;
             }
 
             if (PhotonNetwork.LocalPlayer.GetNext() == player)
@@ -92,7 +119,7 @@ public class CardAnimator : MonoBehaviour
             return sp1;
         }
 
-        if(PhotonNetwork.PlayerList.Length == 3)
+        if (PhotonNetwork.PlayerList.Length == 3)
         {
             if (player.GetNext() == PhotonNetwork.LocalPlayer)
             {
@@ -112,14 +139,20 @@ public class CardAnimator : MonoBehaviour
             DealCardsToPlayerAsync();
             iscardDealt = true;
         }
+
+        if (isMovingToPosition == false && isInitialized == true && iscardDealt == true)
+        {
+            //playerGameObject
+            playerGameObject.transform.position += new Vector3(PlayerCardScrollBar.value, 0.0f, 0.0f);
+        }
     }
 
     private void InitializeAllCard()
     {
-        for (int x = 1; x <= 53; x++)
+        for (int x = 1; x <= Constants.NUMBER_OF_CARDS; x++)
         {
             GameObject card = Instantiate(cardPrefab,
-                new Vector2(this.gameObject.transform.position.x + x/20, (this.gameObject.transform.position.y) + x / 20), Quaternion.identity);
+                new Vector2(this.gameObject.transform.position.x + x / 20, (this.gameObject.transform.position.y) + x / 20), Quaternion.identity);
             card.transform.parent = this.transform;
             AllCardsObj.Add(card.GetComponent<CardObj>());
         }
@@ -165,7 +198,7 @@ public class CardAnimator : MonoBehaviour
 
         GameObject player = PlayersObjectArray.Where(ap => ap.GetComponent<PlayerCardList>().isMine == true).First();
 
-        foreach(CardObj cardobj in player.GetComponent<PlayerCardList>().cardObjs)
+        foreach (CardObj cardobj in player.GetComponent<PlayerCardList>().cardObjs)
         {
             cardobj.SetCardValue(playercard.cards[i]);
             cardobj.SetCardFacedUp();
@@ -173,6 +206,14 @@ public class CardAnimator : MonoBehaviour
         }
 
         SpaceAllCards();
+        ReArrangeAllOpponetCards();
+
+        // PLAY FIRST ACTIV CARD
+        if (isFirstCardActionDone == false)
+        {
+            isFirstCardActionDone = true;
+            cardManager.StartFirstCard();
+        }
     }
 
     public IEnumerator MoveToPosition(Transform transform, Vector3 position, float timeToMove)
@@ -180,7 +221,7 @@ public class CardAnimator : MonoBehaviour
         isMovingToPosition = true;
         var currentPos = transform.position;
         var t = 0f;
-        while (t < 1)
+        while (transform.position != position)
         {
             t += Time.deltaTime / timeToMove;
             transform.position = Vector3.Lerp(currentPos, position, t);
@@ -227,7 +268,28 @@ public class CardAnimator : MonoBehaviour
                 ,
                 cardobj.gameObject.transform.position.y
                 );
-            extraSpace += Constants.PLAYER_CARDS_SPACE_OFFSET ;
+            extraSpace += Constants.PLAYER_CARDS_SPACE_OFFSET;
+        }
+    }
+
+    public void ReArrangeAllOpponetCards()
+    {
+        foreach (GameObject player in PlayersObjectArray)
+        {
+            float extraSpace = 0;
+            foreach (CardObj cardobj in player.GetComponent<PlayerCardList>().cardObjs)
+            {
+                if (player.GetComponent<PlayerCardList>().isMine == false)
+                {
+                    cardobj.gameObject.transform.position = new Vector3(
+                    cardobj.gameObject.transform.position.x
+                    + extraSpace
+                    ,
+                    cardobj.gameObject.transform.position.y
+                    );
+                    extraSpace += 0.2f;
+                }
+            }
         }
     }
 
@@ -265,16 +327,33 @@ public class CardAnimator : MonoBehaviour
             co.SetCardFacedUp();
             AddCardToPlayingDeck(co);
         }
+
+        PlayerCards playerCard = cardManager.GetPlayerCardFromPlayerId(playerId);
+
+        if (cardManager.IsCardsPoolEmpty())
+        {
+            // Calculate and return winner
+            Debug.Log("Game Over Cards Finished");
+        }
+
+        if (cardManager.IsPlayerCardRemainingOne(playerCard.player))
+        {
+            // Show Last Card Warning
+            Debug.Log("Last Card" + playerCard.player.NickName);
+        }
+
+        if (cardManager.IsPlayerCardFinish(playerCard.player))
+        {
+            // return winner
+            Debug.Log("Winner" + playerCard.player.NickName);
+        }
     }
 
     private void AddCardToPlayingDeck(CardObj co)
     {
         PlayingDeck.GetComponent<PlayingDeck>().cardObjs.Add(co);
-        //co.gameObject.transform.SetSiblingIndex(0);
         MoveCard(co.gameObject, PlayingDeck.transform.position);
-        //co.gameObject.transform.SetSiblingIndex(0);
         co.gameObject.transform.SetParent(PlayingDeck.transform);
-        //co.gameObject.transform.SetSiblingIndex(0);
     }
 
     public void MoveCard(GameObject cardObject, Vector3 destinationGameObject)
@@ -341,7 +420,12 @@ public class CardAnimator : MonoBehaviour
                 ));
             }
             co.gameObject.transform.SetParent(playerObject.transform);
+
+            // ReArrange All Players Card
         }
+
+        SpaceAllCards();
+        ReArrangeAllOpponetCards();
     }
 
     public void PlayCard(GameObject cardGameObject)
@@ -378,5 +462,49 @@ public class CardAnimator : MonoBehaviour
     public bool CheckIfCardPlayerIsValid(Card playedCard, Card currentCard)
     {
         return true;
+    }
+
+    public void SetPlayCardPopUp(Card card, GameObject gameObject)
+    {
+        isPlayCardPopUp = true;
+
+        CurrentCardObj = gameObject;
+
+        SuitImage.sprite = ImageDisplay.GetSuitImage(card);
+        RankImage1.sprite = ImageDisplay.GetRankImage(card);
+        RankImage2.sprite = ImageDisplay.GetRankImage(card);
+
+        PlayCardPopUp.SetActive(true);
+    }
+
+    public void PlayPopUpButton()
+    {
+        RemovePlayCardPopUp();
+        PlayCard(CurrentCardObj);
+    }
+
+    public void RemovePlayCardPopUp()
+    {
+        PlayCardPopUp.SetActive(false);
+        isPlayCardPopUp = false;
+    }
+
+    public void SetMarketPopUp()
+    {
+        isGotoMarketPopUp = true;
+
+        GotoMarketPopUp.SetActive(true);
+    }
+
+    public void MarketPopUpButton()
+    {
+        RemoveMarketPopUp();
+        AskForMarket();
+    }
+
+    public void RemoveMarketPopUp()
+    {
+        GotoMarketPopUp.SetActive(false);
+        isGotoMarketPopUp = false;
     }
 }

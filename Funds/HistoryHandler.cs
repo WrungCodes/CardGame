@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System;
 
 public class HistoryHandler : MonoBehaviour
 {
@@ -31,6 +32,59 @@ public class HistoryHandler : MonoBehaviour
     }
 
     public void DisplayTransaction()
+    {
+        foreach (GameObject gobject in trans)
+        {
+            Destroy(gobject);
+        }
+
+        loading.SetActive(true);
+        GetHistory.GetUserHistory(
+            (response) => {
+
+                loading.SetActive(false);
+
+                HistoryResponse historyResponse = (HistoryResponse)response;
+
+                foreach (HistroyModel histroy in historyResponse.history)
+                {
+                    GenerateHistroyItem(histroy);
+                }
+
+            },
+            (statusCode, error) => {
+
+                loading.SetActive(false);
+                failed.SetActive(true);
+
+                if (statusCode == StatusCodes.CODE_VALIDATION_ERROR)
+                {
+                    ValidationError validationError = (ValidationError)error;
+                }
+                else
+                {
+                    GenericError genericError = (GenericError)error;
+                }
+            }
+        );
+    }
+
+    private void GenerateHistroyItem(HistroyModel histroy)
+    {
+        Debug.Log(histroy.type);
+        GameObject obj = Instantiate(scrollItemPrefab);
+        obj.transform.SetParent(scrollContent.transform, false);
+        obj.transform.Find("TransType").gameObject.GetComponent<Text>().text = histroy.type.ToUpper();
+        obj.transform.Find("TransAmount").gameObject.GetComponent<Text>().text = ChoseSign(histroy.type) + " NGN " + String.Format("{0}", histroy.amount);
+
+        obj.transform.Find("TransAmount").gameObject.GetComponent<Text>().color = ChoseColor(histroy.type);
+        obj.transform.Find("TransTime").gameObject.GetComponent<Text>().text = histroy.created_at;
+        //transaction.time
+
+        trans.Add(obj);
+    }
+
+    public void DisplayTransaction11()
     {
         User user = GlobalState.GetUser();
         string token = GlobalState.GetToken();
@@ -80,6 +134,10 @@ public class HistoryHandler : MonoBehaviour
         {
             case "deposit":
                 return "+";
+            case "win":
+                return "+";
+            case "refund":
+                return "+";
             case "withdrawal":
                 return "-";
             case "stake":
@@ -94,6 +152,10 @@ public class HistoryHandler : MonoBehaviour
         switch (type)
         {
             case "deposit":
+                return Color.green;
+            case "win":
+                return Color.green;
+            case "refund":
                 return Color.green;
             case "withdrawal":
                 return Color.red;

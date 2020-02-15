@@ -44,31 +44,31 @@ public static class WithdrawController
                 GladePayWithdrawalResponse pay = FormatGetData.GladePayWithdrawal(response);
                 user.wallet_balance = new_amount;
                 string new_user_data = FormatPostData.UserFieldModel(user);
-                FireBase.Patch(
-                    new_user_data, "users/" + user.local_id, token,
-                    (response3) =>
-                    {
-                        FireBase.Post(
-                            trans_data, "/transactions/?documentId=" + tranx_id, token,
-                            (response1) =>
-                            {
-                                string id = Generate.UniqueUuid();
-                                Withdraw withdraw = new Withdraw(id, tranx_id, bankCode,bankName, accountNumber, amount, pay.txnRef, user);
-                                string withdraw_data = FormatPostData.WithdrawalFieldModel(withdraw);
-                                FireBase.Post(
-                                    withdraw_data, "/withdrawals/?documentId=" + tranx_id, token,
-                                    (response2) => { callback(response, new_amount); },
-                                    (error) => { fallback(error); }
-                                );
-                            },
-                                (error) =>
-                                {
-                                    fallback(error);
-                                }
-                            );
-                    },
-                    (error) => { fallback(error); }
-                );
+                //FireBase.Patch(
+                //    new_user_data, "users/" + user.local_id, token,
+                //    (response3) =>
+                //    {
+                //        FireBase.Post(
+                //            trans_data, "/transactions/?documentId=" + tranx_id, token,
+                //            (response1) =>
+                //            {
+                //                string id = Generate.UniqueUuid();
+                //                Withdraw withdraw = new Withdraw(id, tranx_id, bankCode,bankName, accountNumber, amount, pay.txnRef, user);
+                //                string withdraw_data = FormatPostData.WithdrawalFieldModel(withdraw);
+                //                FireBase.Post(
+                //                    withdraw_data, "/withdrawals/?documentId=" + tranx_id, token,
+                //                    (response2) => { callback(response, new_amount); },
+                //                    (error) => { fallback(error); }
+                //                );
+                //            },
+                //                (error) =>
+                //                {
+                //                    fallback(error);
+                //                }
+                //            );
+                //    },
+                //    (error) => { fallback(error); }
+                //);
             },
             (error) => { fallback(error); }
           );

@@ -13,12 +13,12 @@ public static class HistoryController
     {
         string quert_data = FormatQuery.GetQueryData("local_id", user.local_id, "transactions");
 
-        FireBase.Post( quert_data, ":runQuery", token,
-            (response) => {
-                List<Transaction> transactions = FormatGetData.AllTransactions(response);
-                callback(transactions);
-            },
-            (error) => { fallback(error); }
-        );
+        //FireBase.Post( quert_data, ":runQuery", token,
+        //    (response) => {
+        //        List<Transaction> transactions = FormatGetData.AllTransactions(response);
+        //        callback(transactions);
+        //    },
+        //    (error) => { fallback(error); }
+        //);
     }
 }

@@ -20,24 +20,24 @@ public static class StakeController
 
         user.wallet_balance = new_amount;
         string new_user_data = FormatPostData.UserFieldModel(user);
-        FireBase.Patch(
-            new_user_data, "users/" + user.local_id, token,
-            (response3) =>
-            {
-                FireBase.Post(
-                    trans_data, "/transactions/?documentId=" + tranx_id, token,
-                    (response1) =>
-                        {
-                            callback(new_amount);
-                        },
-                    (error) =>
-                        {
-                            fallback(error);
-                        }
-                    );
-            },
-            (error) => { fallback(error); }
-        );
+        //FireBase.Patch(
+        //    new_user_data, "users/" + user.local_id, token,
+        //    (response3) =>
+        //    {
+        //        FireBase.Post(
+        //            trans_data, "/transactions/?documentId=" + tranx_id, token,
+        //            (response1) =>
+        //                {
+        //                    callback(new_amount);
+        //                },
+        //            (error) =>
+        //                {
+        //                    fallback(error);
+        //                }
+        //            );
+        //    },
+        //    (error) => { fallback(error); }
+        //);
 
     }
 

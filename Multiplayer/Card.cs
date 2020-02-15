@@ -24,6 +24,11 @@ public class Card : IEquatable<Card>
         Suit = SetCardSuit(_cardSerializer.Suit);
     }
 
+    public int RankPoints()
+    {
+        return (int) Rank;
+    }
+
     public Ranks GetRank()
     {
         return Rank;

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using FullSerializer;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class AuthHandler : MonoBehaviour
 {
@@ -47,12 +48,14 @@ public class AuthHandler : MonoBehaviour
     {
         login_panel.gameObject.SetActive(false);
         signup_panel.gameObject.SetActive(true);
+        loader_panel.gameObject.SetActive(false);
     }
 
     public void GoToLogin()
     {
         login_panel.gameObject.SetActive(true);
         signup_panel.gameObject.SetActive(false);
+        loader_panel.gameObject.SetActive(false);
     }
 
     private void StartLoader()
@@ -64,107 +67,136 @@ public class AuthHandler : MonoBehaviour
 
     public void OnPressSignUp()
     {
-        SignUp(signup_email.text, signup_password.text, signup_username.text, signup_phone.text);
+        StartLoader();
+        SignUpUser(signup_email.text, signup_password.text, signup_username.text);
     }
 
     public void OnPressSignIn()
     {
-        //StartCoroutine(showPopUpT("Account Created Successfully", "success"));
-        SignIn(login_email.text, login_password.text);
+        StartLoader();
+        LoginUser(login_email.text, login_password.text);
     }
 
-    private void SignUp(string email, string password, string username, string phone)
+    private void SignUpUser(string email, string password, string username)
     {
-        string[] fields = { email, password, username, password, phone };
+        string[] fields = { email, password, username };
+
         Validate.CheckEmptyFields(
-        fields,
-        // an empty field found
-        (message) => { StartCoroutine(showPopUpT(message, "error")); },
+            fields,
+            (message) => {
+                loader_panel.gameObject.SetActive(false);
+                StartCoroutine(showPopUpT(message, "error"));
+            },
+            () =>
+            {
+                SignUp.SignUpUser(
+                    new SignUpPayload( username, email, password),
+                    (response) => {
+                        SignUpResponse signUpResponse = (SignUpResponse)response;
 
-        // no empty fields
-        () => {
-            string document_path = "users";
-            // gets all the users
-            FireBase.Get(document_path, "",
-                (response) => {
-                    List<User> allusers = FormatGetData.AllUsers(response);
-                    Validate.CheckIfUserExist(
-                        username, phone, email, allusers,
-                        // if user details exists
-                        (message) => { StartCoroutine(showPopUpT(message[0], "error")); },
-                        //if user details dosen't exist
-                        () => {
-                            SignUpController.SignUp(
-                            email, password, username, phone,
-                            (user, refresh_token, id_token) => {
-                                GlobalState.SetToken(id_token);
-                                SetRefreshToken(refresh_token);
-                                StartCoroutine(GotoMainMenu());
-                                PlayerPrefs.SetString("sign_up_done", "yes");
+                        AuthStatus.SetSignedUp("true");
+                        Token.SetToken(signUpResponse.token);
 
-                                // set the user
-                                GlobalState.SetUser(user);
-                                StartCoroutine(showPopUpT("Account Created Successfully", "success"));
-                            },
-                            () => { StartCoroutine(showPopUpT("Error Occurred Making Account", "error")); }
-                            );
+                        StartCoroutine(showPopUpT(signUpResponse.message, "success"));
+
+                        loader_panel.gameObject.SetActive(false);
+                        login_panel.gameObject.SetActive(true);
+                    },
+                    (statusCode, error) => {
+
+                        createAccount();
+
+                        if (statusCode == StatusCodes.CODE_VALIDATION_ERROR)
+                        {
+                            ValidationError validationError = (ValidationError)error;
+                            StartCoroutine(showPopUpT(validationError.errors.First().Value[0], "error"));                           
                         }
-                    );
-                },
-                (error) => { }
+                        else
+                        {
+                            GenericError genericError = (GenericError)error;
+                            StartCoroutine(showPopUpT(genericError.message, "error"));
+                        }
+                    }
                 );
-
-            //DatabaseHandler.GetUsers(
-            //    (allusers) => {
-            //        Validate.CheckIfUserExist(
-            //            username, phone, email, allusers,
-            //            // if user details exists
-            //            (message) => { StartCoroutine(showPopUpT(message[0], "error")); },
-            //            //if user details dosen't exist
-            //            () => {
-            //                SignUpController.SignUp(
-            //                email, password, username, phone,
-            //                (user, refresh_token, id_token) => {
-            //                    GlobalState.SetToken(id_token);
-            //                    SetRefreshToken(refresh_token);
-            //                    StartCoroutine(GotoMainMenu());
-            //                    PlayerPrefs.SetString("sign_up_done", "yes");
-
-            //                    // set the user
-            //                    GlobalState.SetUser(user);
-            //                    StartCoroutine(showPopUpT("Account Created Successfully", "success")); },
-            //                () => { StartCoroutine(showPopUpT("Error Occurred Making Account", "error")); }
-            //                );
-            //            }
-            //        );
-            //    }
-            //    );
             }
         );
     }
 
-    private void SignIn(string email, string password)
-    {     
-        string[] fields = { email, password};
-        Validate.CheckEmptyFields(
-        fields,
-        // an empty field found
-        (message) => { StartCoroutine(showPopUpT(message, "error")); },
-        // no empty fields
-        () =>
-        {
-            SignInController.SignIn(email, password,
-              (user, refreshToken, id_token) => {
-                  //
-                  PlayerPrefs.SetString("sign_up_done", "yes");
-                  StartCoroutine(GotoMainMenu());
-                  GlobalState.SetToken(id_token);
-                  SetRefreshToken(refreshToken);
-                  GlobalState.SetUser(user);
-                  StartCoroutine(showPopUpT("Welcome " + user.username, "success")); },
-              (error) => { StartCoroutine(showPopUpT("Invalid Email or Password", "error")); }
-            );
-        });
+    private void LoginUser(string email, string password)
+    {
+        Debug.Log(email);
+        string[] fields = { email, password };
+
+            Validate.CheckEmptyFields(
+            fields,
+            (message) => {
+                loader_panel.gameObject.SetActive(false);
+                StartCoroutine(showPopUpT(message, "error"));
+            },
+            () =>
+            {
+                Login.LoginUser(
+                    new LoginPayload(email, password),
+                    (response) => {
+                        LoginResponse loginResponse = (LoginResponse)response;
+
+                        AuthStatus.SetSignedUp("true");
+                        Token.SetToken(loginResponse.token);
+
+                        GetProfileOfUser();
+
+                        StartCoroutine(showPopUpT(loginResponse.message, "success"));
+                    },
+                    (statusCode, error) => {
+
+                        GoToLogin();
+
+                        if (statusCode == StatusCodes.CODE_VALIDATION_ERROR)
+                        {
+                            ValidationError validationError = (ValidationError)error;
+                            StartCoroutine(showPopUpT(validationError.errors.First().Value[0], "error"));
+                        }
+                        else
+                        {
+                            GenericError genericError = (GenericError)error;
+                            StartCoroutine(showPopUpT(genericError.message, "error"));
+                        }
+                    }
+                );
+            }
+        );
+    }
+
+    public void GetProfileOfUser()
+    {
+        GetProfile.GetUserProfile(
+            (response) => {
+                ProfileResponse profileResponse = (ProfileResponse)response;
+
+                State.UserProfile = profileResponse.profile;
+
+                StartCoroutine(showPopUpT("successfully signed in", "success"));
+
+                StartCoroutine(GotoMainMenu());
+            },
+            (statusCode, error) => {
+
+                GoToLogin();
+
+                if (statusCode == StatusCodes.CODE_VALIDATION_ERROR)
+                {
+                    ValidationError validationError = (ValidationError)error;
+                    StartCoroutine(showPopUpT(validationError.errors.First().Value[0], "error"));
+                }
+                else
+                {
+                    GenericError genericError = (GenericError)error;
+                    StartCoroutine(showPopUpT(genericError.message, "error"));
+                }
+            }
+        );
+           
+        
     }
 
     private void showPopUp(string message, string type)
@@ -197,68 +229,23 @@ public class AuthHandler : MonoBehaviour
 		SceneManager.LoadScene(sceneBuildIndex:1);
 	}
 
-    private bool HasToken()
-    {
-        if (PlayerPrefs.HasKey("refresh_token"))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    private bool HasSignedUp()
-    {
-        if (PlayerPrefs.HasKey("sign_up_done"))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    private string GetRefreshToken()
-    {
-        return PlayerPrefs.GetString("refresh_token");
-    }
-
-    private void SetRefreshToken(string token)
-    {
-        PlayerPrefs.SetString("refresh_token", token);
-    }
-
     private void OnStartApp()
     {
         loader_panel.gameObject.SetActive(true);
-        if (HasSignedUp())
+        if (!AuthStatus.HasSignedUp())
         {
-            if (HasToken())
-            {
-                string token = GetRefreshToken();
-                RefreshController.RefreshToken(token,
-                    (user, refresh_token, id_token) =>
-                    {
-                        GlobalState.SetToken(id_token);
-                        SetRefreshToken(refresh_token);
-                        StartCoroutine(GotoMainMenu());
-                        GlobalState.SetUser(user);
-                    },
-                    (error) =>
-                    {
-                        loader_panel.gameObject.SetActive(false);
-                        Debug.Log(error);
-                        login_panel.gameObject.SetActive(true);
-                    }
-                );
-            }
-            else
-            {
-                loader_panel.gameObject.SetActive(false);
-                login_panel.gameObject.SetActive(true);
-            }
+            // SignUp Screen
+            createAccount();
+        }
+        else if(!Token.HasToken())
+        {
+            // Login Screen
+            GoToLogin();
         }
         else
         {
-            loader_panel.gameObject.SetActive(false);
-            signup_panel.gameObject.SetActive(true);
+            //Login Automatically
+            GetProfileOfUser();
         }
     }
 }

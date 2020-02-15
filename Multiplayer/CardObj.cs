@@ -53,14 +53,23 @@ public class CardObj : MonoBehaviour
             return;
         }
 
-        //if()
+        if (cardAnimator.isPlayCardPopUp == true || cardAnimator.isGotoMarketPopUp == true) {
+            cardAnimator.RemovePlayCardPopUp();
+            cardAnimator.RemoveMarketPopUp();
+            //return;
+        }
 
         cardAnimator.ReturnAllCardsToDefualt();
 
         if (this.gameObject.transform.IsChildOf(cardAnimator.gameObject.transform))
         {
-            cardAnimator.AskForMarket();
+            // Ask For Market POP UP
+            cardAnimator.isGotoMarketPopUp = true;
+            cardAnimator.SetMarketPopUp();
+            //cardAnimator.AskForMarket();
         }
+
+
         else
         {
             bool isMineCard = this.gameObject.GetComponentInParent<PlayerCardList>().isMine;
@@ -76,7 +85,10 @@ public class CardObj : MonoBehaviour
 
                 if (isActiveCard == true)
                 {
-                    cardAnimator.PlayCard(this.gameObject);
+                    // Ask to play POP UP
+                    cardAnimator.SetPlayCardPopUp(this.owncard, this.gameObject);
+                    cardAnimator.isPlayCardPopUp = true;
+                    //cardAnimator.PlayCard(this.gameObject);
                 }
             }
         }

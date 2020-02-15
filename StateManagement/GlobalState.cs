@@ -66,19 +66,19 @@ public class GlobalState : MonoBehaviour
 
     public void RefreshToken()
     {
-        string token = PlayerPrefs.GetString("refresh_token");
+        //string token = PlayerPrefs.GetString("refresh_token");
 
-        RefreshController.Refresh(token,
-                    (refresh_token, id_token) =>
-                    {
-                        SetToken(id_token);
-                        SetRefreshToken(refresh_token);
-                    },
-                    (error) =>
-                    {
-                        Debug.Log(error);
-                    }
-                );
+        //RefreshController.Refresh(token,
+        //            (refresh_token, id_token) =>
+        //            {
+        //                SetToken(id_token);
+        //                SetRefreshToken(refresh_token);
+        //            },
+        //            (error) =>
+        //            {
+        //                Debug.Log(error);
+        //            }
+        //        );
     }
 
     private static void SetRefreshToken(string token)

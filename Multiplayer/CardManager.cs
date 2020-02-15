@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
@@ -20,6 +21,8 @@ public class CardManager : MonoBehaviour
     DataManager dataManager;
 
     RPC_Manager RPC_Manager;
+
+    bool isFirstCardActionDone = false;
 
     void Start()
     {
@@ -234,27 +237,20 @@ public class CardManager : MonoBehaviour
 
         PlayerCards nextPlayerPlayerCards = PlayerFunctions.GetPlayer(nextPlayer.NickName, dataManager.GetPlayerFromPlayerCards());
 
-        //nextPlayerPlayerCards.SetToTurn();
-        // End set turn
-
-
-        //Card currentCard = allCards[allCards.Count - 1];
-
         card = PlayerFunctions.GetSameCard(card, allCards);
 
         dataManager.AddCardsToPlayingDeck(card);
 
         playerCards.RemoveCards(card);
 
-        //CardAnimator.GetComponent<CardAnimator>().DisableCardInPlayingDeck();
-
         CardAnimator.GetComponent<CardAnimator>().AddCardtoPlayingDeck(card, playerId);
 
-        CarryCardAction(card, playerCards.player);
+        CarryCardActionAsync(card, playerCards.player);
+    }
 
-        // Set Turn 
-        //nextPlayerPlayerCards.SetToTurn();
-        // End set turn
+    public PlayerCards GetPlayerCardFromPlayerId(string playerId)
+    {
+        return PlayerFunctions.GetPlayer(playerId, dataManager.GetPlayerFromPlayerCards());
     }
 
 
@@ -284,22 +280,20 @@ public class CardManager : MonoBehaviour
         CardAnimator.GetComponent<CardAnimator>().AddCardToPlayerDeck(card, playerId);
     }
 
-    public IEnumerator WaitForTime(float timeToMove, string playerName, int numberOfCard)
+    public IEnumerator WaitForTime(float timeToMove)
     {
-        for (int i = 0; i < numberOfCard; i++)
-        {
-            Debug.Log("Got 4");
-            DealACard(playerName);
-            yield return new WaitForSeconds(timeToMove);
-        }
+            yield return new WaitForSeconds(timeToMove);    
     }
 
-    public void CarryCardAction(Card card, Player player)
+    public async Task CarryCardActionAsync(Card card, Player player)
     {
         switch (card.GetRank())
         {
             case Ranks.two:
-                PickSomeCards(2, player.GetNext());
+                await Task.Delay(500);
+                PickSomeCardsAsync(1,player.GetNext());
+                await Task.Delay(1000);
+                PickSomeCardsAsync(1, player.GetNext());
                 GetPlayerN(player.GetNext().GetNext()).SetToTurn();
                 break;
 
@@ -308,18 +302,24 @@ public class CardManager : MonoBehaviour
                 break;
 
             case Ranks.fourteen:
-                foreach(Player p in PhotonNetwork.PlayerList)
+                //await Task.Delay(500);
+                foreach (Player p in PhotonNetwork.PlayerList)
                 {
                     if(p != player)
                     {
-                        PickSomeCards(1, p);
+                        PickSomeCardsAsync(1, p);
                     }
                 }
                 GetPlayerN(player).SetToTurn();
                 break;
 
             case Ranks.five:
-                PickSomeCards(3, player.GetNext());
+                await Task.Delay(500);
+                PickSomeCardsAsync(1, player.GetNext());
+                await Task.Delay(1000);
+                PickSomeCardsAsync(1, player.GetNext());
+                await Task.Delay(1000);
+                PickSomeCardsAsync(1, player.GetNext());
                 GetPlayerN(player.GetNext().GetNext()).SetToTurn();
                 break;
 
@@ -336,19 +336,157 @@ public class CardManager : MonoBehaviour
         }
     }
 
+    public void StartFirstCard()
+    {
+        ChooseFirstPlayerCardActionAsync(dataManager.PlayingDeck.First(), PhotonNetwork.MasterClient);
+    }
+
+    public async Task ChooseFirstPlayerCardActionAsync(Card card, Player player)
+    {
+        switch (card.GetRank())
+        {
+            case Ranks.two:
+                await Task.Delay(500);
+                PickSomeCardsAsync(1, player);
+                await Task.Delay(1000);
+                PickSomeCardsAsync(1, player);
+                GetPlayerN(player.GetNext()).SetToTurn();
+                break;
+
+            case Ranks.one:
+                GetPlayerN(player).SetToTurn();
+                break;
+
+            case Ranks.fourteen:
+                foreach (Player p in PhotonNetwork.PlayerList)
+                {
+                   PickSomeCardsAsync(1, p);
+                }
+                GetPlayerN(player).SetToTurn();
+                break;
+
+            case Ranks.five:
+                await Task.Delay(500);
+                PickSomeCardsAsync(1, player);
+                await Task.Delay(1000);
+                PickSomeCardsAsync(1, player);
+                await Task.Delay(1000);
+                PickSomeCardsAsync(1, player);
+                GetPlayerN(player.GetNext()).SetToTurn();
+                break;
+
+            case Ranks.eight:
+                GetPlayerN(player.GetNext()).SetToTurn();
+                break;
+
+            case Ranks.Whot:
+                break;
+
+            default:
+                GetPlayerN(player).SetToTurn();
+                break;
+        }
+    }
+
     public PlayerCards GetPlayerN(Player player)
     {
         return PlayerFunctions.GetPlayer(player.NickName, dataManager.GetPlayerFromPlayerCards());
     }
 
-    public void PickSomeCards(int numberOfCard, Player playerToPick)
+    public void PickSomeCardsAsync(int numberOfCard, Player playerToPick)
     {
-        //StartCoroutine(WaitForTime(4f, playerToPick.NickName, numberOfCard));
-
         for (int i = 0; i < numberOfCard; i++)
         {
             DealACard(playerToPick.NickName);
         }
+    }
+
+    public void PickTwo(Player playerToPick)
+    {
+        DealCardSync(playerToPick);
+    }
+
+    public void PickThree(Player playerToPick)
+    {
+        DealCardSync(playerToPick);
+    }
+
+
+
+    public IEnumerator DoFirst()
+    {
+        isFirstCardActionDone = true;
+
+        yield return new WaitForSeconds(5);
+
+        isFirstCardActionDone = false;
+    }
+
+    IEnumerator DealCardSync(Player playerToPick)
+    {
+        DealACard(playerToPick.NickName);
+        yield return null;
+    }
+
+    public bool IsCardsPoolEmpty()
+    {
+        if (dataManager.AllCards.Count == 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool IsPlayerCardFinish(Player player)
+    {
+        if (GetPlayerN(player).cards.Count == 0 && GetPlayerN(player).isTurn == false)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool IsPlayerCardRemainingOne(Player player)
+    {
+        if (GetPlayerN(player).cards.Count == 1)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    //public void CalculateUserCardAmount()
+    //{
+    //    foreach (Player player in PhotonNetwork.PlayerList)
+    //    {
+    //        SumUserCards(player);
+    //    }
+    //}
+
+    public int SumUserCards(Player player)
+    {
+        int totalNumber = 0;
+
+        PlayerCards playerCards = GetPlayerN(player);
+
+        foreach (Card card in playerCards.cards)
+        {
+            if (card.Suit == Suits.Star)
+            {
+                totalNumber += 2 * card.RankPoints();
+            }
+            else
+            {
+                totalNumber += card.RankPoints();
+            }
+        }
+
+        return totalNumber;
+    }
+
+    public void DeclareWinner()
+    {
+
     }
 
 }

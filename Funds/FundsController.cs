@@ -48,174 +48,176 @@ public class FundsController : MonoBehaviour
 
     private string bankCode;
     private string bankName;
+    private string bankUid;
 
-    Dictionary<string, string> banks;
+    private List<BankModel> banks;
+
+    private BankModel currentBank;
 
     //public GameObject mainMenu;
 
+    public GameObject MenuManager;
+
+    public GameObject DepositPanel;
+    public GameObject LogoPanel;
 
 
-    // Start is called before the first frame update
+    MenuManager menuManager;
+
     void Start()
     {
-        User user = GlobalState.GetUser();
+        MenuManager = GameObject.FindWithTag("MenuManager");
 
-        wallet_balance_deposit.text = $"WALLET BALANCE: N {user.wallet_balance}";
-        username_deposit.text = user.username;
+        menuManager = MenuManager.GetComponent<MenuManager>();
 
-        wallet_balance_withdrawal.text = $"WALLET BALANCE: N {user.wallet_balance}";
-        username_withdrawal.text = user.username;
-
-        tranRef = "";
-        float_amount = 0;
-        deposit_form.gameObject.SetActive(true);
+        GetBanksList();
 
 
+        banksList.onValueChanged.AddListener(delegate {
+            DropdownValueChanged(banksList.value);
+        });
 
-        //Withdraw();
     }
 
     private void Awake()
     {
-        banks = Banks.AllBanks();
-
-        bankCode = banks.Values.First();
-        bankName = banks.Keys.First();
-
-        banksList.ClearOptions();
-        banksList.AddOptions(banks.Keys.ToList());
-
-        banksList.onValueChanged.AddListener(DropdownValueChanged);
 
     }
 
     void ClearFields()
     {
         amount.text = "";
-        cardNumber.text = "";
-        cvv.text = "";
-        month.text = "";
-        year.text = "";
-        pin.text = "";
-        accountNumber.text = "";
-        withdrawal_amount.text = "";
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     public void InitiateDeposit()
     {
-        string[] fields = { amount.text, cardNumber.text, cvv.text, month.text, year.text, pin.text };
+        string[] fields = { amount.text };
 
         Validate.CheckEmptyFields(fields,
-            (message) => { Debug.Log("Empty Fields"); },
+            (message) => { menuManager.StartCoroutine(menuManager.showPopUpT(message, "error")); },
             () =>
             {
                 SetLoading(deposit_loading, deposit_form, deposit_back_button, true);
                 float_amount = float.Parse(amount.text);
 
-                User user = GlobalState.GetUser();
-                string token = GlobalState.GetToken();
+                DepositFunds.DepositUserFunds(
+                    new DepositPayload(float_amount),
+                    (response) => {
+                        DepositResponse depositResponse = (DepositResponse)response;
+                        Application.OpenURL(depositResponse.url);
 
-                DepositController.DepositWithCard(amount.text, cardNumber.text, cvv.text, month.text, year.text, pin.text,
-                    user, token,
-                    (response) =>
-                    {
-                        GladePayDepositResponse pay = FormatGetData.GladePayDeposit(response);
-                        tranRef = pay.txnRef;
-                        SetLoading(deposit_loading, deposit_otp_form, deposit_back_button, false);
-                        ClearFields();
+                        SetLoading(deposit_loading, deposit_form, deposit_back_button, false);
+                        ResetDeposit();
+
+                        DepositPanel.SetActive(false);
+                        LogoPanel.SetActive(true);
                     },
-                    (error) =>
-                    {
-                        ClearFields();
-                        SetLoading(deposit_loading, deposit_failed, deposit_back_button, false);
-                        Debug.Log(error);
+                    (statusCode, error) => {
+                        SetLoading(deposit_loading, deposit_form, deposit_back_button, false);
+                        if (statusCode == StatusCodes.CODE_VALIDATION_ERROR)
+                        {
+                            ValidationError validationError = (ValidationError)error;
+                            menuManager.StartCoroutine(menuManager.showPopUpT(validationError.errors.First().Value[0], "error"));
+                        }
+                        else
+                        {
+                            GenericError genericError = (GenericError)error;
+                            menuManager.StartCoroutine(menuManager.showPopUpT(genericError.message, "error"));
+                        }
                     }
-                    );
+                );
             });
     }
 
-    public void ValidateDeposit()
-    {
-        if (otp.text == "")
-        {
-            Debug.Log("Invalid Otp");
-            return;
-        }
-
-        SetLoading(deposit_loading, deposit_otp_form, deposit_back_button, true);
-        User user = GlobalState.GetUser();
-        string token = GlobalState.GetToken();
-
-        DepositController.DepositValidate(float_amount, otp.text, tranRef, user, token,
-            (response, new_amount) =>
-            {
-                GlobalState.SetUserWalletBalance(new_amount);
-                wallet_balance_deposit.text = $"WALLET BALANCE: N {new_amount}";
-                main_wallet_balance.text = $"WALLET BALANCE: N {new_amount}";
-                wallet_balance_withdrawal.text = $"WALLET BALANCE: N {new_amount}";
-
-                tranRef = "";
-                SetLoading(deposit_loading, deposit_success, deposit_back_button, false);
-            },
-            (error) =>
-            {
-                ClearFields();
-                SetLoading(deposit_loading,deposit_failed, deposit_back_button, false);
-                Debug.Log(error);
-            }
-            );
-    }
-
-    //    string account_number = "09237234234";
-
     public void Withdraw()
     {
-        User user = GlobalState.GetUser();
+        string[] fields = { withdrawal_amount.text, accountNumber.text};
 
-        float withdrawalFee = Env.WITHDRAWAL_FEE;
-
-        float amount_to_withdrawal = float.Parse(withdrawal_amount.text);
-
-        if (!WithdrawController.CheckIfUserBalanceIsEnough(user, amount_to_withdrawal + withdrawalFee))
+        if (currentBank == null)
         {
-            Debug.Log("Insufficient Funds");
+            menuManager.StartCoroutine(menuManager.showPopUpT("Select a bank", "error"));
             return;
         }
 
-        string token = GlobalState.GetToken();
-
-        SetLoading(withdraw_loading, withdraw_form, withdraw_back_button, true);
-
-        WithdrawController.WithdrawToBank(user, token, amount_to_withdrawal, bankName, bankCode, accountNumber.text,
-            (response, newAmount) => {
-                Debug.Log(response);
-
-                GlobalState.SetUserWalletBalance(newAmount);
-                wallet_balance_deposit.text = $"WALLET BALANCE: N {newAmount}";
-                main_wallet_balance.text = $"WALLET BALANCE: N {newAmount}";
-                wallet_balance_withdrawal.text = $"WALLET BALANCE: N {newAmount}";
-
-                SetLoading(withdraw_loading, withdraw_success, withdraw_back_button, false);
+        Validate.CheckEmptyFields(
+            fields,
+            (message) => { menuManager.StartCoroutine(menuManager.showPopUpT(message, "error"));
+                //ResetWithdrawal();
             },
-            (error) => {
-                ClearFields();
-                Debug.Log(error);
-                SetLoading(withdraw_loading, withdraw_failed, withdraw_back_button, false);
-            }
-        );
+            () =>
+            {
+                SetLoading(withdraw_loading, withdraw_form, withdraw_back_button, true);
+
+                InitiateWithdrawal.Withdraw(
+                    new WithdrawalPayload(float.Parse(withdrawal_amount.text), accountNumber.text, currentBank.uid),
+
+                    (response) => {
+                        BalanceResponse depositResponse = (BalanceResponse)response;
+
+                        withdraw_form.SetActive(false);
+
+                        Debug.Log(depositResponse.balance);
+
+                        State.UserProfile.naira_balance = depositResponse.balance;
+
+                        SetLoading(withdraw_loading, withdraw_success, withdraw_back_button, false);
+                    },
+
+                    (statusCode, error) => {
+                        SetLoading(withdraw_loading, withdraw_failed, withdraw_back_button, false);
+                        if (statusCode == StatusCodes.CODE_VALIDATION_ERROR)
+                        {
+                            ValidationError validationError = (ValidationError)error;
+                            menuManager.StartCoroutine(menuManager.showPopUpT(validationError.errors.First().Value[0], "error"));
+                        }
+                        else
+                        {
+                            GenericError genericError = (GenericError)error;
+                            menuManager.StartCoroutine(menuManager.showPopUpT(genericError.message, "error"));
+                        }
+                    }
+                    );
+
+
+            });
     }
 
+    private void GetBanksList()
+    {
+        GetAllBanks.AllBanks(
+
+            (response) => {
+                BanksResponse depositResponse = (BanksResponse)response;
+
+                banks = depositResponse.banks;
+
+                banksList.options.Clear();
+                //fill the dropdown menu OptionData with all COM's Name in ports[]
+                foreach (BankModel bm in banks)
+                {
+                    banksList.options.Add(new Dropdown.OptionData() { text = bm.name });
+                }
+            },
+
+            (statusCode, error) => {
+                if (statusCode == StatusCodes.CODE_VALIDATION_ERROR)
+                {
+                    ValidationError validationError = (ValidationError)error;
+                    menuManager.StartCoroutine(menuManager.showPopUpT(validationError.errors.First().Value[0], "error"));
+                }
+                else
+                {
+                    GenericError genericError = (GenericError)error;
+                    menuManager.StartCoroutine(menuManager.showPopUpT(genericError.message, "error"));
+                }
+            }
+
+        );
+    } 
 
     private void DropdownValueChanged(int newPosition)
     {
-        bankCode = banks.Values.ElementAt(newPosition);
-        bankName = banks.Keys.ElementAt(newPosition);
+        currentBank = banks.ElementAt(newPosition);
     }
 
     void SetLoading(GameObject loader, GameObject panel, GameObject button, bool status)
@@ -242,6 +244,7 @@ public class FundsController : MonoBehaviour
         deposit_otp_form.gameObject.SetActive(false);
         deposit_success.gameObject.SetActive(false);
         deposit_back_button.SetActive(true);
+        ClearFields();
     }
 
     public void ResetWithdrawal()

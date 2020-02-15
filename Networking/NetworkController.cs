@@ -14,7 +14,7 @@ public class NetworkController : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        PhotonNetwork.NickName = GlobalState.GetUser().username;
+        PhotonNetwork.NickName =State.UserProfile.username;
         //PlayerNetwork.Instance.PlayerName;
         Debug.Log(PhotonNetwork.NickName + " Connected to " + PhotonNetwork.CloudRegion + " Server");
         PhotonPeer.RegisterType(typeof(CardSerializer), (byte)'M', CardSerializer.Serialize, CardSerializer.Deserialize);

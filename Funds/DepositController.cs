@@ -60,27 +60,27 @@ public static class DepositController
                 Deposit deposit = new Deposit(id, tranx_id, amount, tranx_ref, user);
                 string trans_data = FormatPostData.TransactionFieldModel(transaction);
                 string deposit_data = FormatPostData.DepositFieldModel(deposit);
-                FireBase.Post(
-                    trans_data, "/transactions/?documentId="+ tranx_id, id_token,
-                    (response1) => {
-                        FireBase.Post(
-                            deposit_data, "/deposits/?documentId="+ tranx_id, id_token,
-                            (response2) => {
-                                user.wallet_balance = new_amount;
-                                string new_user_data = FormatPostData.UserFieldModel(user);
-                                FireBase.Patch(
-                                    new_user_data, "users/"+user.local_id, id_token,
-                                    (response3) => { callback(response2, new_amount); },
-                                    (error) => { fallback(error); }
-                                ); 
-                            },
-                            (error) => { fallback(error); }
-                        );
-                    },
-                    (error) => {
-                        fallback(error);
-                    }
-                );
+                //FireBase.Post(
+                //    trans_data, "/transactions/?documentId="+ tranx_id, id_token,
+                //    (response1) => {
+                //        FireBase.Post(
+                //            deposit_data, "/deposits/?documentId="+ tranx_id, id_token,
+                //            (response2) => {
+                //                user.wallet_balance = new_amount;
+                //                string new_user_data = FormatPostData.UserFieldModel(user);
+                //                FireBase.Patch(
+                //                    new_user_data, "users/"+user.local_id, id_token,
+                //                    (response3) => { callback(response2, new_amount); },
+                //                    (error) => { fallback(error); }
+                //                ); 
+                //            },
+                //            (error) => { fallback(error); }
+                //        );
+                //    },
+                //    (error) => {
+                //        fallback(error);
+                //    }
+                //);
             },
             error => {
                 Debug.Log(error);

@@ -30,10 +30,7 @@ public class StakeHandler : MonoBehaviour
 
     private void Awake()
     {
-        twoplayer.text = GetValues(2);
-        threeplayer.text = GetValues(3);
-        fourplayer.text = GetValues(4);
-        sixplayer.text = GetValues(6);
+
     }
 
     // Update is called once per frame

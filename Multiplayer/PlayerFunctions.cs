@@ -14,8 +14,8 @@ public static class PlayerFunctions
         {
             bool isTurn = false;
 
-            if (player.IsMasterClient)
-                isTurn = true;
+            //if (player.IsMasterClient)
+            //    isTurn = true;
 
             AllPlayerList.Add(new PlayerCards(player.NickName, new List<Card>(), player, isTurn));
         }

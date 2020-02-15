@@ -1,4 +1,5 @@
 ﻿using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -23,8 +24,21 @@ public class DelayStartRoomController : MonoBehaviourPunCallbacks
         // called when our player joins the room
         // load into waiting room scene
         //StartGame();
+
         SceneManager.LoadScene(waitingRoomSceneIndex);
-	}
+
+        //if (PhotonNetwork.IsMasterClient)
+        //{
+        //    GameModel game = new GameModel();
+
+        //    foreach (Player player in PhotonNetwork.PlayerList)
+        //    {
+        //        game.playersList.Add(player.NickName);
+        //    }
+
+        //    State.GameModel = game;
+        //}
+    }
 
     //private void StartGame() //Function for loading into the multiplayer scene.
     //{
