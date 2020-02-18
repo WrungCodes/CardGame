@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Photon.Realtime;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CardObj : MonoBehaviour
 {
@@ -23,10 +24,13 @@ public class CardObj : MonoBehaviour
 
     CardAnimator cardAnimator;
 
+    GameObject PlayingDeck;
+
     public bool isActiveCard = false;
 
     public Card owncard;
 
+    private int fingerID = -1;
     //public GameObject PlayinDeck;
 
     // Start is called before the first frame update
@@ -35,10 +39,23 @@ public class CardObj : MonoBehaviour
         
     }
 
+
+    void Update()
+    {
+        if (EventSystem.current.IsPointerOverGameObject(fingerID) == false)
+        {
+            return;
+        }
+    }
+
     private void Awake()
     {
+        #if !UNITY_EDITOR
+             fingerID = 0; 
+        #endif
         ImageDisplay = GameObject.FindWithTag("ImageDisplay").GetComponent<ImageDisplay>();
         cardAnimator = GameObject.FindWithTag("CardsPool").GetComponent<CardAnimator>();
+        PlayingDeck = GameObject.FindWithTag("PlayingDeck");
     }
 
     void OnMouseDown() {
@@ -53,8 +70,9 @@ public class CardObj : MonoBehaviour
             return;
         }
 
-        if (cardAnimator.isPlayCardPopUp == true || cardAnimator.isGotoMarketPopUp == true) {
+        if (cardAnimator.isPlayingCardPopUp == true|| cardAnimator.isPlayCardPopUp == true || cardAnimator.isGotoMarketPopUp == true) {
             cardAnimator.RemovePlayCardPopUp();
+            cardAnimator.RemovePlayingCardPopUp();
             cardAnimator.RemoveMarketPopUp();
             //return;
         }
@@ -66,6 +84,14 @@ public class CardObj : MonoBehaviour
             // Ask For Market POP UP
             cardAnimator.isGotoMarketPopUp = true;
             cardAnimator.SetMarketPopUp();
+            //cardAnimator.AskForMarket();
+        }
+
+        if (this.gameObject.transform.IsChildOf(PlayingDeck.transform))
+        {
+            // Ask For Market POP UP
+            cardAnimator.isPlayingCardPopUp = true;
+            cardAnimator.SetPlayingCardPopUp();
             //cardAnimator.AskForMarket();
         }
 
@@ -87,7 +113,7 @@ public class CardObj : MonoBehaviour
                 {
                     // Ask to play POP UP
                     cardAnimator.SetPlayCardPopUp(this.owncard, this.gameObject);
-                    cardAnimator.isPlayCardPopUp = true;
+                    cardAnimator.isPlayingCardPopUp = true;
                     //cardAnimator.PlayCard(this.gameObject);
                 }
             }
@@ -98,10 +124,6 @@ public class CardObj : MonoBehaviour
     {
         this.gameObject.transform.position = new Vector3(this.gameObject.transform.position.x, this.gameObject.transform.position.y - Constants.CARDS_ACTIVE_OFFSET);
         isActiveCard = false;
-    }
-
-    void Update()
-    {
     }
 
     public void SetCardFacedUp()

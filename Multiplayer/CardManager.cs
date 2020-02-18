@@ -196,10 +196,10 @@ public class CardManager : MonoBehaviour
         dataManager.RemoveCardsFromAllCards(card);
 
         CardAnimator.GetComponent<CardAnimator>().AddCardToPlayerDeck(card, playerId);
+
+        // show animation for market
+        CardAnimator.GetComponent<CardAnimator>().ShowNextPlayerGeneric(nextPlayer.NickName + " plays next");
     }
-
-
-
 
     public void PlayCard(Card card)
     {
@@ -290,9 +290,9 @@ public class CardManager : MonoBehaviour
         switch (card.GetRank())
         {
             case Ranks.two:
-                await Task.Delay(500);
+                //await Task.Delay(500);
                 PickSomeCardsAsync(1,player.GetNext());
-                await Task.Delay(1000);
+                //await Task.Delay(1000);
                 PickSomeCardsAsync(1, player.GetNext());
                 GetPlayerN(player.GetNext().GetNext()).SetToTurn();
                 break;
@@ -314,11 +314,11 @@ public class CardManager : MonoBehaviour
                 break;
 
             case Ranks.five:
-                await Task.Delay(500);
+                //await Task.Delay(500);
                 PickSomeCardsAsync(1, player.GetNext());
-                await Task.Delay(1000);
+                //await Task.Delay(1000);
                 PickSomeCardsAsync(1, player.GetNext());
-                await Task.Delay(1000);
+                //await Task.Delay(1000);
                 PickSomeCardsAsync(1, player.GetNext());
                 GetPlayerN(player.GetNext().GetNext()).SetToTurn();
                 break;
@@ -358,6 +358,7 @@ public class CardManager : MonoBehaviour
                 break;
 
             case Ranks.fourteen:
+                await Task.Delay(500);
                 foreach (Player p in PhotonNetwork.PlayerList)
                 {
                    PickSomeCardsAsync(1, p);
@@ -395,10 +396,10 @@ public class CardManager : MonoBehaviour
 
     public void PickSomeCardsAsync(int numberOfCard, Player playerToPick)
     {
-        for (int i = 0; i < numberOfCard; i++)
-        {
+        //for (int i = 0; i < numberOfCard; i++)
+        //{
             DealACard(playerToPick.NickName);
-        }
+        //}
     }
 
     public void PickTwo(Player playerToPick)
@@ -455,6 +456,10 @@ public class CardManager : MonoBehaviour
         return false;
     }
 
+    public Card GetCurrentPlayingCard()
+    {
+        return dataManager.GetPlayingDeck()[dataManager.PlayingDeck.Count - 1]; //PlayingDeck[PlayingDeck.Count - 1];
+    }
     //public void CalculateUserCardAmount()
     //{
     //    foreach (Player player in PhotonNetwork.PlayerList)

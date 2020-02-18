@@ -86,8 +86,12 @@ public class DelayStartWaitingRoomController : MonoBehaviourPunCallbacks
         startingGame = true;
         //if (!PhotonNetwork.IsMasterClient)
         //    return;
-        //PhotonNetwork.CurrentRoom.IsOpen = false;
-        //PhotonNetwork.AutomaticallySyncScene = false;
+
+        PhotonNetwork.CurrentRoom.IsOpen = false;
+        PhotonNetwork.CurrentRoom.IsVisible = false;
+
+        //PhotonNetwork.AutomaticallySyncScene = true;
+
         PhotonNetwork.LoadLevel(multiplayerSceneIndex);
     }
 

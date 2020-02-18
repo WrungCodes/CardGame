@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Photon.Pun;
 using Photon.Realtime;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -14,6 +16,12 @@ public class CardAnimator : MonoBehaviour
 
     public GameObject PlayingDeck;
 
+    public GameObject TextBodyUiPrefab;
+
+    public GameObject ActionNotifier;
+    public GameObject NextPlayerNotifier;
+
+    public GameObject Canvas;
 
     ImageDisplay ImageDisplay;
 
@@ -25,10 +33,17 @@ public class CardAnimator : MonoBehaviour
 
     GameObject CurrentCardObj;
 
+    public GameObject PlayingCardPopUp;
+
+    public Image PlayingSuitImage;
+    public Image PlayingRankImage1;
+    public Image PlayingRankImage2;
+
     public GameObject GotoMarketPopUp;
 
     public bool isGotoMarketPopUp = false;
     public bool isPlayCardPopUp = false;
+    public bool isPlayingCardPopUp = false;
 
     public List<CardObj> AllCardsObj;
 
@@ -139,12 +154,6 @@ public class CardAnimator : MonoBehaviour
             DealCardsToPlayerAsync();
             iscardDealt = true;
         }
-
-        if (isMovingToPosition == false && isInitialized == true && iscardDealt == true)
-        {
-            //playerGameObject
-            playerGameObject.transform.position += new Vector3(PlayerCardScrollBar.value, 0.0f, 0.0f);
-        }
     }
 
     private void InitializeAllCard()
@@ -229,6 +238,8 @@ public class CardAnimator : MonoBehaviour
         }
         isMovingToPosition = false;
         DisableCardInPlayingDeck();
+        SpaceAllCards();
+        ReArrangeAllOpponetCards();
     }
 
     public void ReturnAllCardsToDefualt()
@@ -287,7 +298,7 @@ public class CardAnimator : MonoBehaviour
                     ,
                     cardobj.gameObject.transform.position.y
                     );
-                    extraSpace += 0.2f;
+                    extraSpace += 0.05f;
                 }
             }
         }
@@ -305,6 +316,8 @@ public class CardAnimator : MonoBehaviour
         GameObject playerObject = GetPlayerObject(playerId);
 
         List<CardObj> listOfPlayerCard = playerObject.GetComponent<PlayerCardList>().cardObjs;
+
+        PlayerCards playerCard = cardManager.GetPlayerCardFromPlayerId(playerId);
 
         if (PhotonNetwork.LocalPlayer.NickName == playerId)
         {
@@ -328,7 +341,19 @@ public class CardAnimator : MonoBehaviour
             AddCardToPlayingDeck(co);
         }
 
-        PlayerCards playerCard = cardManager.GetPlayerCardFromPlayerId(playerId);
+        //Display Card Message
+
+        //string actionMessage = DisplayCardMessage(card, playerCard.player);
+        //if (actionMessage != "NULL")
+        //{
+        //    StartCoroutine(ShowNextPlayer(actionMessage));
+        //}
+
+        string nextPlayerMessage = DisplayNextPlayerMessage(card, playerCard.player);
+        StartCoroutine(ShowCardAction(nextPlayerMessage));
+
+        //END >>>
+
 
         if (cardManager.IsCardsPoolEmpty())
         {
@@ -424,8 +449,8 @@ public class CardAnimator : MonoBehaviour
             // ReArrange All Players Card
         }
 
-        SpaceAllCards();
-        ReArrangeAllOpponetCards();
+        //SpaceAllCards();
+        //ReArrangeAllOpponetCards();
     }
 
     public void PlayCard(GameObject cardGameObject)
@@ -462,6 +487,25 @@ public class CardAnimator : MonoBehaviour
     public bool CheckIfCardPlayerIsValid(Card playedCard, Card currentCard)
     {
         return true;
+    }
+
+    public void SetPlayingCardPopUp()
+    {
+        isPlayingCardPopUp = true;
+
+        Card card = cardManager.GetCurrentPlayingCard();
+
+        PlayingSuitImage.sprite = ImageDisplay.GetSuitImage(card);
+        PlayingRankImage1.sprite = ImageDisplay.GetRankImage(card);
+        PlayingRankImage2.sprite = ImageDisplay.GetRankImage(card);
+
+        PlayingCardPopUp.SetActive(true);
+    }
+
+    public void RemovePlayingCardPopUp()
+    {
+        PlayingCardPopUp.SetActive(false);
+        isPlayingCardPopUp = false;
     }
 
     public void SetPlayCardPopUp(Card card, GameObject gameObject)
@@ -506,5 +550,120 @@ public class CardAnimator : MonoBehaviour
     {
         GotoMarketPopUp.SetActive(false);
         isGotoMarketPopUp = false;
+    }
+
+    public void MoveCardsLeft()
+    {
+        if (isMovingToPosition == false && isInitialized == true && iscardDealt == true)
+        {
+            playerGameObject.transform.position -= new Vector3(6.0f, 0.0f, 0.0f);
+        }
+    }
+
+    public void MoveCardsRight()
+    {
+        if (isMovingToPosition == false && isInitialized == true && iscardDealt == true)
+        {
+            playerGameObject.transform.position += new Vector3(6.0f, 0.0f, 0.0f);
+        }
+    }
+
+    string DisplayCardMessage(Card card, Player player)
+    {
+        switch (card.GetRank())
+        {
+            case Ranks.two:
+
+                return player.GetNext().NickName + " picks 2";
+
+            case Ranks.one:
+
+                return "all players hold on";
+
+            case Ranks.fourteen:
+
+                return "all players general market";
+
+            case Ranks.five:
+
+                return player.GetNext().NickName + " picks 3";
+
+            case Ranks.eight:
+
+                return player.GetNext().NickName + " is suspended";
+
+            case Ranks.Whot:
+                return "";
+
+            default:
+                return "NULL";
+        }
+    }
+
+    string DisplayNextPlayerMessage(Card card, Player player)
+    {
+        switch (card.GetRank())
+        {
+            case Ranks.two:
+
+                return player.GetNext().GetNext().NickName + " plays next";
+
+            case Ranks.one:
+
+                return player.NickName + " plays next";
+
+            case Ranks.fourteen:
+
+                return player.NickName + " plays next";
+
+            case Ranks.five:
+
+                return player.GetNext().GetNext().NickName + " plays next";
+
+            case Ranks.eight:
+
+                return player.GetNext().GetNext().NickName + " plays next";
+
+            case Ranks.Whot:
+                return "";
+
+            default:
+                return player.GetNext().NickName + " plays next";
+        }
+    }
+
+    public IEnumerator ShowText(string text)
+    {
+        GameObject obj = Instantiate(TextBodyUiPrefab);
+        obj.transform.SetParent(Canvas.transform, false);
+        obj.transform.Find("TT").gameObject.GetComponent<Text>().text = text;
+
+        yield return new WaitForSeconds(3f);
+        Destroy(obj);
+    }
+
+    public IEnumerator ShowNextPlayer(string text)
+    {
+        GameObject obj = Instantiate(NextPlayerNotifier);
+        obj.transform.SetParent(Canvas.transform, false);
+        obj.transform.Find("Text").gameObject.GetComponent<Text>().text = text;
+
+        yield return new WaitForSeconds(3f);
+        Destroy(obj);
+    }
+
+    public IEnumerator ShowCardAction(string text)
+    {
+        GameObject obj = Instantiate(ActionNotifier);
+        obj.transform.SetParent(Canvas.transform, false);
+        obj.transform.Find("Text").gameObject.GetComponent<Text>().text = text;
+
+        yield return new WaitForSeconds(3f);
+        Destroy(obj);
+    }
+
+    public void ShowNextPlayerGeneric(string message)
+    {
+        StartCoroutine(ShowNextPlayer(message));
     }
 }

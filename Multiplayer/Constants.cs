@@ -7,7 +7,7 @@ public static class Constants
     public const int PLAYER_INITIAL_CARDS = 4;
     public const int CARDS_ACTIVE_OFFSET = 5;
     public const int CARDS_SPACE_OFFSET = 1;
-    public const int PLAYER_CARDS_SPACE_OFFSET = 11;
+    public const int PLAYER_CARDS_SPACE_OFFSET = 13;
     public const int NUMBER_OF_CARDS = 49;
 }
 
