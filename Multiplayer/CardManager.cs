@@ -460,13 +460,7 @@ public class CardManager : MonoBehaviour
     {
         return dataManager.GetPlayingDeck()[dataManager.PlayingDeck.Count - 1]; //PlayingDeck[PlayingDeck.Count - 1];
     }
-    //public void CalculateUserCardAmount()
-    //{
-    //    foreach (Player player in PhotonNetwork.PlayerList)
-    //    {
-    //        SumUserCards(player);
-    //    }
-    //}
+
 
     public int SumUserCards(Player player)
     {
